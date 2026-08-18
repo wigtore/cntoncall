@@ -11,6 +11,8 @@ no build step, no server, no dependencies to install.
 | File | Purpose |
 | --- | --- |
 | `index.html` | The entire application — markup, styles, script, logo and icons are all inlined |
+| `data/roster.json` | Shared roster. Edit this to update every device |
+| `data/coverage.json` | Shared coverage windows |
 | `netlify.toml` | Publish settings plus `noindex`, framing and CSP headers |
 | `robots.txt` | Keeps search crawlers off the site |
 
@@ -69,22 +71,46 @@ roster. Pick one:
 
 Do not rely on the URL being hard to guess.
 
-## Maintenance
+## Publishing changes to everyone
 
-Roster edits, coverage windows and the day/night choice are stored in each
-visitor's own browser (`localStorage`). They do **not** sync between devices.
+`data/roster.json` and `data/coverage.json` are the **shared source of truth**.
+The site fetches them on every load, so publishing once updates every phone and
+laptop. Edits made in the app are local to that browser until you publish them.
 
-To change what *everyone* sees, the roster in `index.html` has to change:
+The Edit roster tab shows which version a device is on:
 
-1. Open the site, go to **Edit roster**, make the changes
-2. Press **Copy roster backup**
-3. Paste the copied text over the `DEFAULT_ROSTER` array in `index.html`
-4. Commit and push
+- *Published roster v3 · in sync* — this device matches what's deployed
+- *this device has unpublished local edits* — changes here are not live for anyone else
 
-Coverage works the same way via the `SEED_COVERAGE` array, which is a plain list
-of `[covered, coveringOfficer, firstDate, lastDate, startTime?, endTime?]`
-entries. Whole-day windows run midnight to midnight and are clamped to their
-two-week block.
+### To publish
+
+1. Make the changes on any device, in **Edit roster** or **On-call coverage**
+2. Press **Download roster.json** (and/or **Download coverage.json**)
+3. Replace `data/roster.json` in this repo with the downloaded file — the GitHub
+   web editor works fine, including from a phone
+4. Commit. Netlify redeploys, and every device picks it up on next load.
+
+The version number increments automatically on download. Any device whose local
+copy predates the new version is overwritten by it; a device with newer local
+edits keeps them until it publishes. **Use published copy** forces a device back
+to the deployed version, discarding its local edits.
+
+If the data files are missing or unreachable, the site falls back to the roster
+compiled into `index.html` and says so in the status bar. It never breaks.
+
+### Editing the JSON by hand
+
+`data/roster.json` is a list of members. `data/coverage.json` is a flat list of
+windows, which is often quicker to edit directly than to click through the UI:
+
+```json
+{ "covered": "N9", "by": "N10",
+  "start": "2026-07-09T07:00", "end": "2026-07-13T00:00", "note": "" }
+```
+
+Times are local, `YYYY-MM-DDTHH:MM`. A window spanning a Thursday 0700 handoff is
+split across blocks automatically. Bump `"version"` whenever you edit by hand,
+or devices with a local copy will ignore the change.
 
 ## Rotation
 

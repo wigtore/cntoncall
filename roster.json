@@ -1,0 +1,607 @@
+{
+ "version": 1,
+ "updated": "2026-08-18",
+ "members": [
+  {
+   "name": "Sgt. D. Lipscomb",
+   "cs": "N1",
+   "team": "blue",
+   "sub": "lead",
+   "role": "Team Leader",
+   "phones": [
+    [
+     "Cell",
+     "949-683-4428"
+    ],
+    [
+     "Wk cell",
+     "949-491-5485"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "L. Flores",
+   "cs": "N3",
+   "team": "blue",
+   "sub": "lead",
+   "role": "Assistant Team Leader",
+   "phones": [
+    [
+     "Cell",
+     "760-831-5513"
+    ],
+    [
+     "Cell 2",
+     "949-697-3230"
+    ],
+    [
+     "Wk cell",
+     "949-202-6058"
+    ]
+   ],
+   "carrier": "",
+   "mode": "sched",
+   "daysLabel": "TUES-FRI",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "J. Aguirre",
+   "cs": "N5",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "626-327-4796"
+    ],
+    [
+     "Wk cell",
+     "949-529-4063"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "B. Noelle",
+   "cs": "N7",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "805-298-0827"
+    ],
+    [
+     "Wk cell",
+     "949-439-4876"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "J. Rauh",
+   "cs": "N9",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "949-680-9024"
+    ],
+    [
+     "Wk cell",
+     "949-351-1426"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "M. Ward",
+   "cs": "N11",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "562-665-2086"
+    ]
+   ],
+   "carrier": "",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "J. Yue",
+   "cs": "N13",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "949-375-6711"
+    ]
+   ],
+   "carrier": "VZ",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 1300,
+   "end": 2300
+  },
+  {
+   "name": "Sgt. R. Newton",
+   "cs": "N15",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "949-412-4413"
+    ]
+   ],
+   "carrier": "T-Mobile",
+   "note": "IOD — see coverage sheet",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 700,
+   "end": 1700
+  },
+  {
+   "name": "J. Evans",
+   "cs": "N19",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "714-272-5545"
+    ],
+    [
+     "Wk cell",
+     "949-604-7285"
+    ]
+   ],
+   "carrier": "VZ",
+   "mode": "sched",
+   "daysLabel": "TUES-THURS",
+   "start": 1330,
+   "end": 200
+  },
+  {
+   "name": "T. Hobbs",
+   "cs": "TS",
+   "team": "blue",
+   "sub": "tech",
+   "role": "Tech Services",
+   "phones": [
+    [
+     "Cell",
+     "949-887-6527"
+    ],
+    [
+     "Home",
+     "949-830-8131"
+    ]
+   ],
+   "carrier": "VZ",
+   "mode": "oncall",
+   "daysLabel": ""
+  },
+  {
+   "name": "Sgt. A. Batstone",
+   "cs": "N2",
+   "team": "red",
+   "sub": "lead",
+   "role": "Team Leader",
+   "phones": [
+    [
+     "Cell",
+     "714-600-0874"
+    ],
+    [
+     "Wk cell",
+     "949-491-3037"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "V. Chang",
+   "cs": "N4",
+   "team": "red",
+   "sub": "lead",
+   "role": "Assistant Team Leader",
+   "phones": [
+    [
+     "Cell",
+     "310-562-3704"
+    ],
+    [
+     "Wk cell",
+     "949-562-3134"
+    ]
+   ],
+   "carrier": "VZ",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "J. Seiders",
+   "cs": "N6",
+   "team": "red",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "949-981-9495"
+    ],
+    [
+     "Wk cell",
+     "949-529-4548"
+    ]
+   ],
+   "carrier": "",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "K. Wiebe",
+   "cs": "N8",
+   "team": "red",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "949-466-9999"
+    ],
+    [
+     "Wk cell",
+     "949-508-6257"
+    ]
+   ],
+   "carrier": "AT&T",
+   "note": "Maternity — see coverage sheet",
+   "mode": "sched",
+   "daysLabel": "FRI-SUN",
+   "start": 1300,
+   "end": 2300
+  },
+  {
+   "name": "E. Brennan",
+   "cs": "N10",
+   "team": "red",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "949-338-7085"
+    ]
+   ],
+   "carrier": "",
+   "mode": "sched",
+   "daysLabel": "FRI-SUN",
+   "start": 600,
+   "end": 1830
+  },
+  {
+   "name": "R. Nigg",
+   "cs": "N12",
+   "team": "red",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "951-541-8589"
+    ]
+   ],
+   "carrier": "",
+   "mode": "sched",
+   "daysLabel": "FRI-SUN",
+   "start": 1830,
+   "end": 700
+  },
+  {
+   "name": "P. Wilks",
+   "cs": "N14",
+   "team": "red",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "951-858-4965"
+    ],
+    [
+     "Wk cell",
+     "949-656-5234"
+    ]
+   ],
+   "carrier": "",
+   "note": "Paternity — see coverage sheet",
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 1300,
+   "end": 2300
+  },
+  {
+   "name": "L. Thrap",
+   "cs": "N16",
+   "team": "red",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "714-345-7351"
+    ],
+    [
+     "Wk cell",
+     "949-604-7587"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "FRI-SUN",
+   "start": 600,
+   "end": 1830
+  },
+  {
+   "name": "T. Wackerman",
+   "cs": "N18",
+   "team": "red",
+   "sub": "neg",
+   "role": "Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "949-525-7150"
+    ],
+    [
+     "Wk cell",
+     "657-270-0127"
+    ]
+   ],
+   "carrier": "T-Mobile",
+   "mode": "sched",
+   "daysLabel": "SUN-TUES",
+   "start": 1800,
+   "end": 630
+  },
+  {
+   "name": "D. Reinhold",
+   "cs": "TR",
+   "team": "red",
+   "sub": "tech",
+   "role": "Tech Reserve",
+   "phones": [
+    [
+     "Cell",
+     "949-796-0100"
+    ]
+   ],
+   "carrier": "VZ",
+   "mode": "oncall",
+   "daysLabel": ""
+  },
+  {
+   "name": "M. Schreiber",
+   "cs": "PSY",
+   "team": "shared",
+   "sub": "tech",
+   "role": "Tech Reserve — Psychologist",
+   "phones": [
+    [
+     "Cell",
+     "949-424-9178"
+    ],
+    [
+     "Alt",
+     "949-344-0136"
+    ]
+   ],
+   "carrier": "VZ",
+   "mode": "oncall",
+   "daysLabel": ""
+  },
+  {
+   "name": "M. Jankowski",
+   "cs": "RES",
+   "team": "shared",
+   "sub": "neg",
+   "role": "Reserve Negotiator",
+   "phones": [
+    [
+     "Cell",
+     "714-325-0762"
+    ],
+    [
+     "Wk cell",
+     "657-789-7221"
+    ]
+   ],
+   "carrier": "AT&T",
+   "note": "Waterfall",
+   "mode": "waterfall",
+   "daysLabel": "THURS-SAT"
+  },
+  {
+   "name": "L. Bale",
+   "cs": "TOC1",
+   "team": "red",
+   "sub": "toc",
+   "role": "Dispatch Assistant Team Leader",
+   "phones": [
+    [
+     "Cell",
+     "714-309-6747"
+    ],
+    [
+     "Wk cell",
+     "949-300-0038"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "SUN-TUES",
+   "start": 600,
+   "end": 1800
+  },
+  {
+   "name": "S. Miller",
+   "cs": "TOC3",
+   "team": "red",
+   "sub": "toc",
+   "role": "Tactical Dispatcher",
+   "phones": [
+    [
+     "Cell",
+     "626-617-3358"
+    ],
+    [
+     "Wk cell",
+     "949-529-7977"
+    ]
+   ],
+   "carrier": "",
+   "mode": "sched",
+   "daysLabel": "SUN-TUES",
+   "start": 1800,
+   "end": 600
+  },
+  {
+   "name": "K. Almeida",
+   "cs": "TOC4",
+   "team": "red",
+   "sub": "toc",
+   "role": "Tactical Dispatcher",
+   "phones": [
+    [
+     "Cell",
+     "909-908-3317"
+    ],
+    [
+     "Wk cell",
+     "949-665-3014"
+    ]
+   ],
+   "carrier": "VZ",
+   "note": "Maternity leave",
+   "mode": "leave",
+   "daysLabel": ""
+  },
+  {
+   "name": "L. Marangi",
+   "cs": "TOC2",
+   "team": "blue",
+   "sub": "toc",
+   "role": "Tactical Dispatcher",
+   "phones": [
+    [
+     "Cell",
+     "714-209-1742"
+    ],
+    [
+     "Wk cell",
+     "949-294-2180"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "WED-SAT",
+   "start": 600,
+   "end": 1600
+  },
+  {
+   "name": "S. Azad",
+   "cs": "TOC5",
+   "team": "blue",
+   "sub": "toc",
+   "role": "Tactical Dispatcher",
+   "phones": [
+    [
+     "Cell",
+     "951-772-6517"
+    ]
+   ],
+   "carrier": "T-Mobile",
+   "mode": "sched",
+   "daysLabel": "WED-FRI",
+   "start": 1800,
+   "end": 600
+  },
+  {
+   "name": "B. Zerrenner",
+   "cs": "TOC6",
+   "team": "blue",
+   "sub": "toc",
+   "role": "Tactical Dispatcher",
+   "phones": [
+    [
+     "Cell",
+     "714-351-5770"
+    ]
+   ],
+   "carrier": "AT&T",
+   "mode": "sched",
+   "daysLabel": "THURS-SAT",
+   "start": 600,
+   "end": 1830
+  },
+  {
+   "name": "A. Yu",
+   "cs": "TOC7",
+   "team": "blue",
+   "sub": "toc",
+   "role": "Tactical Dispatcher",
+   "phones": [
+    [
+     "Cell",
+     "626-423-9155"
+    ]
+   ],
+   "carrier": "T-Mobile",
+   "mode": "sched",
+   "daysLabel": "WED-FRI",
+   "start": 600,
+   "end": 1800
+  }
+ ]
+}

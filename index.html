@@ -352,6 +352,12 @@ select.fin{font-family:var(--body);font-size:14px}
 .callbtn.primary small{color:var(--oninv-dim)}
 /* ---------- edit roster ---------- */
 .editbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px}
+.warnbar{border:1px solid var(--amber);background:var(--amber-bg);color:var(--text);
+  border-radius:9px;padding:11px 13px;font-size:13px;line-height:1.55;margin:12px 0}
+.warnbar b{font-weight:600}
+.flashbar{border:1px solid var(--line);background:var(--panel-2);border-radius:9px;
+  padding:9px 12px;font-family:var(--mono);font-size:12px;margin:10px 0}
+.flashbar.bad{border-color:var(--amber);color:var(--amber)}
 .erow{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line-soft);
   border-left:3px solid var(--dim);border-radius:9px;padding:10px 12px;flex-wrap:wrap}
 .erow.blue{border-left-color:var(--blue)} .erow.red{border-left-color:var(--red)}
@@ -381,6 +387,16 @@ button.cal-cell:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 .ctxline{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:1px}
 .daygroup{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:14px 0 6px}
 .daygroup:first-child{margin-top:0}
+/* ---------- published data bar ---------- */
+.pubbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);
+  border:1px solid var(--line-soft);border-radius:9px;padding:10px 12px;margin:14px 0 6px;
+  font-family:var(--mono);font-size:12px;color:var(--muted)}
+.pubbar b{color:var(--text);font-weight:600}
+.pubbar code{background:var(--bg);border:1px solid var(--line-soft);border-radius:4px;padding:1px 5px;font-size:11px}
+.pubbar .pubacts{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.pubdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dim);margin-right:7px;vertical-align:middle}
+.pubdot.ok{background:var(--blue)} .pubdot.bad{background:var(--amber)}
+.pubwarn{color:var(--amber)}
 footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:12px;font-family:var(--mono);line-height:1.7}
 
 @media (max-width:560px){
@@ -505,6 +521,7 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       </div>
       <p class="sec-note" id="covSub"></p>
 
+      <div id="covWarn"></div>
       <div class="sec-head" id="covHead1"><h2>On call</h2><span class="count" id="covCount"></span></div>
       <p class="sec-note">Each bar spans the full two weeks. Add as many coverage windows as you need &mdash; different people can take different days or hours.</p>
       <div class="covlist" id="covOnCall"></div>
@@ -548,9 +565,16 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
         <button class="btn primary" id="addMember">Add member</button>
         <button class="btn" id="expRoster">Copy roster backup</button>
         <button class="btn" id="impRoster">Restore from backup</button>
+        <button class="btn" id="dlRoster">Download roster.json</button>
+        <button class="btn" id="dlCoverage">Download coverage.json</button>
         <button class="btn quiet" id="resetRoster">Reset to original sheet</button>
       </div>
-      <p class="savenote">Edits save to this browser only &mdash; a teammate opening the page still sees the original roster. Use <b>Copy roster backup</b> and send the text to whoever maintains the page so everyone stays in sync.</p>
+      <p class="savenote" id="edSaveNote">Edits save to this browser only. To push them to <b>every</b> phone and laptop:
+      press <b>Download roster.json</b>, replace <code>data/roster.json</code> in the GitHub repo with that file, and let Netlify redeploy.
+      Every device picks up the new version the next time the page loads.</p>
+      <div class="pubbar" id="pubBar"></div>
+      <div id="edWarn"></div>
+      <div id="edFlash" aria-live="polite"></div>
       <div id="editList"></div>
     </div>
   </section>
@@ -762,18 +786,36 @@ const DEFAULT_ROSTER=[
 let ROSTER = DEFAULT_ROSTER.map(o=>Object.assign({},o));
 
 /* ---- roster persistence ---- */
+/* Some contexts (private windows, sandboxed preview panes, some file:// setups)
+   block localStorage. Probe once so failures can be reported instead of swallowed. */
+const STORAGE_OK=(function(){
+  try{ const k='__cnt_probe__'; localStorage.setItem(k,'1');
+       const v=localStorage.getItem(k); localStorage.removeItem(k); return v==='1'; }
+  catch(e){ return false; }
+})();
+
 const ROSTER_KEY='cnt-roster-v2';
 function hydrate(o){ o.days = o.daysLabel ? daysFrom(o.daysLabel) : []; return o; }
 function saveRoster(){
-  try{ localStorage.setItem(ROSTER_KEY, JSON.stringify(ROSTER.map(p=>{
-    const c=Object.assign({},p); delete c.days; return c; }))); }catch(e){}
+  try{
+    localStorage.setItem(ROSTER_KEY, JSON.stringify({
+      basis: pubInfo.roster ? pubInfo.roster.version : 0,
+      members: ROSTER.map(p=>{ const c=Object.assign({},p); delete c.days; return c; })
+    }));
+    return true;
+  }catch(e){ return false; }
+}
+function readLocalRoster(){
+  try{
+    const raw=localStorage.getItem(ROSTER_KEY); if(!raw) return null;
+    const o=JSON.parse(raw);
+    if(Array.isArray(o)) return {basis:0, members:o};
+    return (o && Array.isArray(o.members)) ? o : null;
+  }catch(e){ return null; }
 }
 function loadRoster(){
-  try{
-    const raw=localStorage.getItem(ROSTER_KEY); if(!raw) return;
-    const arr=JSON.parse(raw);
-    if(Array.isArray(arr)&&arr.length) ROSTER=arr.map(hydrate);
-  }catch(e){}
+  const local=readLocalRoster();
+  if(local && local.members.length) ROSTER=local.members.map(hydrate);
 }
 
 /* ================= shift math ================= */
@@ -849,8 +891,7 @@ const SUBS=[['lead','Leadership'],['neg','Negotiators'],['toc','Tactical Dispatc
 const GROUPS={
   blue:{title:'Blue Team',cls:'rule-blue',tone:'t-blue'},
   red:{title:'Red Team',cls:'rule-red',tone:'t-red'},
-  shared:{title:'Both teams',cls:'rule-shared',tone:'t-shared',note:'Psychologist and reserve negotiator support Blue and Red in either block.'},
-  dispatch:{title:'Tactical Dispatchers',cls:'rule-amber',tone:'t-amber'}   /* legacy — dispatchers now sit inside Blue and Red */
+  shared:{title:'Both teams',cls:'rule-shared',tone:'t-shared',note:'Psychologist and reserve negotiator support Blue and Red in either block.'}
 };
 
 let filter='all', query='';
@@ -858,7 +899,7 @@ const matches=(p,q)=>!q||[p.name,p.cs,p.role].join(' ').toLowerCase().includes(q
 
 function renderRoster(now){
   const wh=weekHour(now), duty=teamAt(now);
-  const order = duty==='blue' ? ['blue','red','shared','dispatch'] : ['red','blue','shared','dispatch'];
+  const order = duty==='blue' ? ['blue','red','shared'] : ['red','blue','shared'];
   const host=document.getElementById('roster');
   host.innerHTML='';
   order.forEach(key=>{
@@ -866,7 +907,7 @@ function renderRoster(now){
     if(!g) return;
     /* Dispatchers sit inside Blue and Red, so the Dispatch chip narrows the
        team sections to the tactical dispatchers rather than picking a team. */
-    if(filter==='dispatch'){ if(key!=='blue'&&key!=='red') return; }
+    if(filter==='dispatch'){ if(key==='shared') return; }
     else if(filter==='blue'||filter==='red'){ if(key!==filter&&key!=='shared') return; }
     let people=ROSTER.filter(p=>p.team===key&&matches(p,query));
     if(filter==='dispatch') people=people.filter(p=>p.sub==='toc');
@@ -977,7 +1018,7 @@ function renderBand(now){
   head.className='band-days';
   head.innerHTML='<div>Call sign</div>'+DOW.map((d,i)=>`<div class="${i===now.getDay()?'today':''}">${d}</div>`).join('');
   band.appendChild(head);
-  ['blue','red','shared','dispatch'].forEach(key=>{
+  ['blue','red','shared'].forEach(key=>{
     const people=ROSTER.filter(p=>p.team===key&&p.mode!=='leave');
     if(!people.length) return;
     const gh=document.createElement('div'); gh.className='band-group'; gh.textContent=GROUPS[key].title;
@@ -1072,18 +1113,30 @@ const STORE_KEY='cnt-coverage-v3';
 let COV={};              // { blockIdx: { coveredCs: [ {id,by,s,e,note} ] } }
 let covIdx=0, pending=null;
 
+function readLocalCov(){
+  try{
+    const raw=localStorage.getItem(STORE_KEY); if(!raw) return null;
+    const o=JSON.parse(raw);
+    if(o && o.cov) return o;
+    return (o && typeof o==='object') ? {basis:0, cov:o} : null;
+  }catch(e){ return null; }
+}
 function loadCov(){
-  let stored=null;
-  try{ stored=localStorage.getItem(STORE_KEY); }catch(e){}
-  if(stored){ try{ COV=JSON.parse(stored)||{}; return; }catch(e){} }
-  COV=buildSeedCoverage();          /* first visit — start from the sheet */
+  const local=readLocalCov();
+  COV = local ? local.cov : buildSeedCoverage();
 }
 function resetCov(){
   if(!confirm('Discard coverage edits and reload the windows transcribed from the rotation sheet?')) return;
   COV=buildSeedCoverage(); saveCov();
   renderCoverage(new Date()); renderLive(); renderRoster(new Date()); renderCal(new Date());
 }
-function saveCov(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(COV)); }catch(e){} }
+function saveCov(){
+  try{
+    localStorage.setItem(STORE_KEY,JSON.stringify({
+      basis: pubInfo.coverage ? pubInfo.coverage.version : 0, cov: COV }));
+    return true;
+  }catch(e){ return false; }
+}
 
 const byCs = cs => ROSTER.find(p=>p.cs===cs);
 const segsFor = (i,cs) => ((COV[i]||{})[cs]||[]).slice().sort((x,y)=>x.s-y.s);
@@ -1214,6 +1267,7 @@ function renderCoverage(now){
 
   const onCall=onCallSet(i);
   const host=document.getElementById('covOnCall'); host.innerHTML='';
+  renderWarnings();
   const sect=(label,people)=>{
     if(!people.length) return;
     const h=document.createElement('p'); h.className='covgroup'; h.textContent=label; host.appendChild(h);
@@ -1452,10 +1506,31 @@ const timeToNum = t => { const [h,m]=t.split(':').map(Number); return h*100+m; }
 const TEAMNAME={blue:'Blue Team',red:'Red Team',shared:'Both teams',dispatch:'Tactical dispatch'};
 let editing=null;   // call sign being edited, or null for a new member
 
+function storageWarning(){
+  return STORAGE_OK ? '' :
+    '<div class="warnbar">This browser is blocking local storage, so <b>changes will not survive a reload</b>. '+
+    'That usually means the page is open inside a preview pane, a private window, or straight off the file system. '+
+    'Open the site at its own web address instead. Meanwhile use <b>Copy roster backup</b> before you close the tab.</div>';
+}
+function renderWarnings(){
+  ['edWarn','covWarn'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.innerHTML=storageWarning();
+  });
+}
+function flash(msg,ok,detail){
+  const el=document.getElementById('edFlash'); if(!el) return;
+  const tail = detail!==undefined ? detail
+    : (ok?' — saved to this browser only. Publish it to reach other devices.'
+         :' — NOT saved. Local storage is blocked, so this change is lost on reload.');
+  el.innerHTML='<div class="flashbar'+(ok?'':' bad')+'">'+msg+tail+'</div>';
+  clearTimeout(flash._t); flash._t=setTimeout(()=>{el.innerHTML='';},7000);
+}
+
 function renderEdit(){
   const host=document.getElementById('editList'); host.innerHTML='';
+  renderWarnings(); renderPubBar();
   document.getElementById('editCount').textContent=ROSTER.length+' members';
-  ['blue','red','shared','dispatch'].forEach(team=>{
+  ['blue','red','shared'].forEach(team=>{
     const people=ROSTER.filter(p=>p.team===team).sort(bySign);
     if(!people.length) return;
     const h=document.createElement('p'); h.className='covgroup'; h.textContent=TEAMNAME[team];
@@ -1549,15 +1624,18 @@ function saveMember(){
   }else{
     ROSTER.push(obj);
   }
-  saveRoster(); closeEditor(); renderAll(); renderEdit();
+  const ok=saveRoster(); closeEditor(); renderAll(); renderEdit();
+  flash(cs+' '+name, ok);
 }
 function deleteMember(){
   if(!editing) return;
   const p=byCs(editing);
   if(!confirm('Remove '+editing+' '+p.name+' from the roster? Any coverage assigned to or by them is removed too.')) return;
+  const gone=editing+' '+p.name;
   ROSTER=ROSTER.filter(x=>x.cs!==editing);
   purgeCallSign(editing);
-  saveRoster(); closeEditor(); renderAll(); renderEdit();
+  const ok=saveRoster(); closeEditor(); renderAll(); renderEdit();
+  flash('Removed '+gone, ok);
 }
 /* keep coverage records consistent with roster edits */
 function remapCallSign(oldCs,newCs){
@@ -1751,6 +1829,128 @@ function renderDay(){
 }
 function stepDay(n){ daySel=new Date(daySel.getTime()+n*864e5); renderDay(); }
 
+/* ================= published data ================= */
+/* index.html ships a built-in roster, but the deployed site also serves
+   data/roster.json and data/coverage.json. Those files are the shared source of
+   truth: publish a new version and every phone picks it up on next load. Local
+   edits are an overlay that only outlive a publish if they were made against
+   that same published version. */
+const PUB={roster:'data/roster.json', coverage:'data/coverage.json'};
+let pubInfo={roster:null, coverage:null, state:'checking'};
+
+async function fetchJSON(url){
+  try{
+    const r=await fetch(url+(url.includes('?')?'&':'?')+'v='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){ return null; }
+}
+
+function applyPublishedRoster(doc,force){
+  if(!doc||!Array.isArray(doc.members)||!doc.members.length) return false;
+  pubInfo.roster=doc;
+  const local=readLocalRoster();
+  if(!force && local && local.basis>=doc.version) return false;  /* local is current */
+  ROSTER=doc.members.map(hydrate);
+  try{ localStorage.removeItem(ROSTER_KEY); }catch(e){}
+  return true;
+}
+function applyPublishedCoverage(doc,force){
+  if(!doc||!Array.isArray(doc.windows)) return false;
+  pubInfo.coverage=doc;
+  const local=readLocalCov();
+  if(!force && local && local.basis>=doc.version) return false;
+  const out={};
+  doc.windows.forEach((w,n)=>{
+    const s=new Date(w.start).getTime(), e=new Date(w.end).getTime();
+    if(!(e>s)) return;
+    let cur=s;
+    while(cur<e){                       /* a window may straddle a handoff */
+      const i=blockIndex(new Date(cur));
+      const hi=Math.min(e, blockStart(i+1).getTime());
+      out[i]=out[i]||{}; out[i][w.covered]=out[i][w.covered]||[];
+      out[i][w.covered].push({id:'pub'+n+'_'+cur,by:w.by,s:cur,e:hi,note:w.note||''});
+      cur=hi;
+    }
+  });
+  COV=out;
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  return true;
+}
+
+async function syncPublished(force){
+  pubInfo.state='checking'; renderPubBar();
+  const [r,c]=await Promise.all([fetchJSON(PUB.roster), fetchJSON(PUB.coverage)]);
+  if(!r && !c){ pubInfo.state='offline'; renderPubBar(); return false; }
+  let changed=false;
+  if(applyPublishedRoster(r,force)) changed=true;
+  if(applyPublishedCoverage(c,force)) changed=true;
+  pubInfo.state='ok';
+  if(changed){ renderAll(); renderEdit(); }
+  renderPubBar();
+  if(changed) flash('Loaded published data v'+((r&&r.version)||'?'), true, 'Local edits on this device were replaced.');
+  return changed;
+}
+
+function renderPubBar(){
+  const el=document.getElementById('pubBar'); if(!el) return;
+  const r=pubInfo.roster, local=readLocalRoster();
+  let txt;
+  if(pubInfo.state==='checking') txt='<span class="pubdot"></span>Checking for published updates…';
+  else if(pubInfo.state==='offline')
+    txt='<span class="pubdot bad"></span>No published data file found. This page is running on the roster built into '+
+        '<code>index.html</code>. Publish <code>data/roster.json</code> to share updates across devices.';
+  else{
+    const stamp=r? ('v'+r.version+(r.updated?' · '+r.updated:'')) : '—';
+    txt='<span class="pubdot ok"></span>Published roster <b>'+stamp+'</b>'+
+        (local && local.basis>=(r?r.version:0)
+          ? ' · <span class="pubwarn">this device has unpublished local edits</span>'
+          : ' · in sync');
+  }
+  el.innerHTML=txt+
+    '<span class="pubacts">'+
+    '<button class="btn" id="pubCheck">Check for updates</button>'+
+    '<button class="btn" id="pubForce">Use published copy</button>'+
+    '</span>';
+  const c=document.getElementById('pubCheck'), f=document.getElementById('pubForce');
+  if(c) c.addEventListener('click',()=>syncPublished(false).then(ch=>{ if(!ch) flash('Already up to date',true,''); }));
+  if(f) f.addEventListener('click',()=>{
+    if(!confirm('Discard local edits on this device and load the published copy?')) return;
+    syncPublished(true);
+  });
+}
+
+/* ---- files to publish ---- */
+function rosterDoc(){
+  return {
+    version:(pubInfo.roster?pubInfo.roster.version:0)+1,
+    updated:new Date().toISOString().slice(0,10),
+    members:ROSTER.map(p=>{ const c=Object.assign({},p); delete c.days; return c; })
+  };
+}
+function coverageDoc(){
+  const iso=ms=>{ const d=new Date(ms);
+    return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes()); };
+  const windows=[];
+  Object.keys(COV).map(Number).sort((a,b)=>a-b).forEach(i=>
+    allSegs(i).sort((a,b)=>a.s-b.s).forEach(x=>
+      windows.push({covered:x.cs, by:x.by, start:iso(x.s), end:iso(x.e), note:x.note||''})));
+  return {
+    version:(pubInfo.coverage?pubInfo.coverage.version:0)+1,
+    updated:new Date().toISOString().slice(0,10),
+    windows
+  };
+}
+function download(name,text){
+  try{
+    const b=new Blob([text],{type:'application/json'});
+    const u=URL.createObjectURL(b), a=document.createElement('a');
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(u); a.remove(); },0);
+    return true;
+  }catch(e){ return false; }
+}
+
 /* ================= wiring ================= */
 function renderAll(){
   const now=new Date();
@@ -1803,6 +2003,18 @@ document.getElementById('imCancel').addEventListener('click',()=>document.getEle
 document.getElementById('imSave').addEventListener('click',importRoster);
 document.getElementById('importer').addEventListener('click',e=>{if(e.target.id==='importer')document.getElementById('importer').hidden=true;});
 document.getElementById('resetRoster').addEventListener('click',resetRoster);
+document.getElementById('dlRoster').addEventListener('click',()=>{
+  const doc=rosterDoc();
+  flash(download('roster.json',JSON.stringify(doc,null,1))
+    ? 'roster.json v'+doc.version+' downloaded' : 'Download blocked by this browser',
+    true, ' — replace data/roster.json in the repo with it, then redeploy.');
+});
+document.getElementById('dlCoverage').addEventListener('click',()=>{
+  const doc=coverageDoc();
+  flash(download('coverage.json',JSON.stringify(doc,null,1))
+    ? 'coverage.json v'+doc.version+' downloaded ('+doc.windows.length+' windows)' : 'Download blocked by this browser',
+    true, ' — replace data/coverage.json in the repo with it, then redeploy.');
+});
 document.getElementById('dayClose').addEventListener('click',()=>document.getElementById('daySheet').hidden=true);
 document.getElementById('dayPrev').addEventListener('click',()=>stepDay(-1));
 document.getElementById('dayNext').addEventListener('click',()=>stepDay(1));
@@ -1842,7 +2054,8 @@ document.querySelectorAll('.themesw button').forEach(b=>
 
 const _n=new Date(); calY=_n.getFullYear(); calM=_n.getMonth();
 loadCov(); loadRoster(); covIdx=blockIndex(_n);
-renderAll(); renderEdit();
+renderAll(); renderEdit(); renderPubBar();
+syncPublished(false);   /* the published copy wins over a stale local one */
 setInterval(()=>{const n=new Date();renderBanner(n);renderRoster(n);if(momentT===null)renderLive();renderBand(n);},30000);
 </script>
 </body>
