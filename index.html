@@ -863,9 +863,13 @@ function renderRoster(now){
   host.innerHTML='';
   order.forEach(key=>{
     const g=GROUPS[key];
-    if(filter!=='all'&&filter!=='onshift'&&filter!==key&&key!=='shared') return;
-    if(filter==='dispatch'&&key==='shared') return;
+    if(!g) return;
+    /* Dispatchers sit inside Blue and Red, so the Dispatch chip narrows the
+       team sections to the tactical dispatchers rather than picking a team. */
+    if(filter==='dispatch'){ if(key!=='blue'&&key!=='red') return; }
+    else if(filter==='blue'||filter==='red'){ if(key!==filter&&key!=='shared') return; }
     let people=ROSTER.filter(p=>p.team===key&&matches(p,query));
+    if(filter==='dispatch') people=people.filter(p=>p.sub==='toc');
     if(filter==='onshift') people=people.filter(p=>isOn(p,wh));
     if(!people.length) return;
 
