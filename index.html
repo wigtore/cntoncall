@@ -573,10 +573,10 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
         <div class="formrow">
           <label>Team<select class="fin" id="eTeam">
             <option value="blue">Blue Team</option><option value="red">Red Team</option>
-            <option value="shared">Both teams</option><option value="dispatch">Tactical dispatch</option>
+            <option value="shared">Both teams</option>
           </select></label>
           <label>Group<select class="fin" id="eSub">
-            <option value="lead">Leadership</option><option value="neg">Negotiators</option><option value="tech">Tech &amp; support</option>
+            <option value="lead">Leadership</option><option value="neg">Negotiators</option><option value="toc">Tactical Dispatcher</option><option value="tech">Tech &amp; support</option>
           </select></label>
         </div>
         <div class="formrow">
@@ -750,19 +750,19 @@ const DEFAULT_ROSTER=[
   P('M. Schreiber','PSY','shared','tech','Tech Reserve — Psychologist',[['Cell','949-424-9178'],['Alt','949-344-0136']],{mode:'oncall'},'VZ'),
   P('M. Jankowski','RES','shared','neg','Reserve Negotiator',[['Cell','714-325-0762'],['Wk cell','657-789-7221']],{mode:'waterfall',days:'THURS-SAT'},'AT&T','Waterfall'),
 
-  /* DISPATCH */
-  P('L. Bale','TOC1','dispatch','lead','Assistant Team Leader',[['Cell','714-309-6747'],['Wk cell','949-300-0038']],{mode:'sched',days:'SUN-TUES',start:600,end:1800},'AT&T'),
-  P('L. Marangi','TOC2','dispatch','neg','Tactical Dispatcher',[['Cell','714-209-1742'],['Wk cell','949-294-2180']],{mode:'sched',days:'WED-SAT',start:600,end:1600},'AT&T'),
-  P('S. Miller','TOC3','dispatch','neg','Tactical Dispatcher',[['Cell','626-617-3358'],['Wk cell','949-529-7977']],{mode:'sched',days:'SUN-TUES',start:1800,end:600},''),
-  P('S. Azad','TOC5','dispatch','neg','Tactical Dispatcher',[['Cell','951-772-6517']],{mode:'sched',days:'WED-FRI',start:1800,end:600},'T-Mobile'),
-  P('B. Zerrenner','TOC6','dispatch','neg','Tactical Dispatcher',[['Cell','714-351-5770']],{mode:'sched',days:'THURS-SAT',start:600,end:1830},'AT&T'),
-  P('A. Yu','TOC7','dispatch','neg','Tactical Dispatcher',[['Cell','626-423-9155']],{mode:'sched',days:'WED-FRI',start:600,end:1800},'T-Mobile'),
-  P('K. Almeida','TOC4','dispatch','neg','Tactical Dispatcher',[['Cell','909-908-3317'],['Wk cell','949-665-3014']],{mode:'leave'},'VZ','Maternity leave')
+  /* TACTICAL DISPATCHERS — part of the Red / Blue line-ups */
+  P('L. Bale','TOC1','red','toc','Dispatch Assistant Team Leader',[['Cell','714-309-6747'],['Wk cell','949-300-0038']],{mode:'sched',days:'SUN-TUES',start:600,end:1800},'AT&T'),
+  P('S. Miller','TOC3','red','toc','Tactical Dispatcher',[['Cell','626-617-3358'],['Wk cell','949-529-7977']],{mode:'sched',days:'SUN-TUES',start:1800,end:600},''),
+  P('K. Almeida','TOC4','red','toc','Tactical Dispatcher',[['Cell','909-908-3317'],['Wk cell','949-665-3014']],{mode:'leave'},'VZ','Maternity leave'),
+  P('L. Marangi','TOC2','blue','toc','Tactical Dispatcher',[['Cell','714-209-1742'],['Wk cell','949-294-2180']],{mode:'sched',days:'WED-SAT',start:600,end:1600},'AT&T'),
+  P('S. Azad','TOC5','blue','toc','Tactical Dispatcher',[['Cell','951-772-6517']],{mode:'sched',days:'WED-FRI',start:1800,end:600},'T-Mobile'),
+  P('B. Zerrenner','TOC6','blue','toc','Tactical Dispatcher',[['Cell','714-351-5770']],{mode:'sched',days:'THURS-SAT',start:600,end:1830},'AT&T'),
+  P('A. Yu','TOC7','blue','toc','Tactical Dispatcher',[['Cell','626-423-9155']],{mode:'sched',days:'WED-FRI',start:600,end:1800},'T-Mobile')
 ];
 let ROSTER = DEFAULT_ROSTER.map(o=>Object.assign({},o));
 
 /* ---- roster persistence ---- */
-const ROSTER_KEY='cnt-roster-v1';
+const ROSTER_KEY='cnt-roster-v2';
 function hydrate(o){ o.days = o.daysLabel ? daysFrom(o.daysLabel) : []; return o; }
 function saveRoster(){
   try{ localStorage.setItem(ROSTER_KEY, JSON.stringify(ROSTER.map(p=>{
@@ -845,12 +845,12 @@ function swapNote(p){
   return out.length?`<div class="cardnote" style="color:var(--amber)">${out.join(' · ')}</div>`:'';
 }
 
-const SUBS=[['lead','Leadership'],['neg','Negotiators'],['tech','Tech & support']];
+const SUBS=[['lead','Leadership'],['neg','Negotiators'],['toc','Tactical Dispatchers'],['tech','Tech & support']];
 const GROUPS={
   blue:{title:'Blue Team',cls:'rule-blue',tone:'t-blue'},
   red:{title:'Red Team',cls:'rule-red',tone:'t-red'},
   shared:{title:'Both teams',cls:'rule-shared',tone:'t-shared',note:'Psychologist and reserve negotiator support Blue and Red in either block.'},
-  dispatch:{title:'Tactical Dispatchers',cls:'rule-amber',tone:'t-amber',note:'Dispatch runs its own weekly schedule and is not part of the two-week block.'}
+  dispatch:{title:'Tactical Dispatchers',cls:'rule-amber',tone:'t-amber'}   /* legacy — dispatchers now sit inside Blue and Red */
 };
 
 let filter='all', query='';
@@ -1093,8 +1093,10 @@ function onCallSet(i){
 }
 function eligibleFor(p,i){
   const duty=blockTeam(i);
-  if(p.team==='dispatch') return ROSTER.filter(x=>x.team==='dispatch'&&x.cs!==p.cs&&x.mode!=='leave');
-  return ROSTER.filter(x=>x.mode!=='leave'&&x.cs!==p.cs&&x.team!=='dispatch'&&(x.team!==duty||x.team==='shared'));
+  const off = x => x.mode!=='leave' && x.cs!==p.cs && (x.team!==duty || x.team==='shared');
+  /* a dispatch console seat is covered by a dispatcher from the other team */
+  if(p.sub==='toc') return ROSTER.filter(x=>off(x)&&x.sub==='toc');
+  return ROSTER.filter(x=>off(x)&&x.sub!=='toc');
 }
 
 /* ---- time helpers ---- */
@@ -1206,23 +1208,24 @@ function renderCoverage(now){
     (i===cur?'<b>Active now</b>':i===cur+1?'Up next':i<cur?'Past block':'Future block');
   document.getElementById('covHead1').className='sec-head '+(duty==='blue'?'rule-blue':'rule-red');
 
-  const onCall=onCallSet(i), dispatch=ROSTER.filter(p=>p.team==='dispatch'&&p.mode!=='leave');
+  const onCall=onCallSet(i);
   const host=document.getElementById('covOnCall'); host.innerHTML='';
   const sect=(label,people)=>{
     if(!people.length) return;
     const h=document.createElement('p'); h.className='covgroup'; h.textContent=label; host.appendChild(h);
     people.forEach(p=>host.appendChild(onCallRow(p,i,now)));
   };
-  sect((duty==='blue'?'Blue Team':'Red Team')+' — holding this block', onCall.filter(p=>p.team===duty));
-  sect('Both teams — reserves', onCall.filter(p=>p.team==='shared'));
-  sect('Tactical dispatch — own weekly schedule', dispatch);
+  const dutyName = duty==='blue'?'Blue Team':'Red Team';
+  sect(dutyName+' — negotiators holding this block', onCall.filter(p=>p.team===duty&&p.sub!=='toc').sort(bySign));
+  sect(dutyName+' — tactical dispatchers', onCall.filter(p=>p.team===duty&&p.sub==='toc').sort(bySign));
+  sect('Both teams — reserves', onCall.filter(p=>p.team==='shared').sort(bySign));
 
   const segs=allSegs(i);
   document.getElementById('covCount').textContent=
-    (onCall.length+dispatch.length)+' on call · '+segs.length+' coverage window'+(segs.length===1?'':'s');
+    onCall.length+' on call · '+segs.length+' coverage window'+(segs.length===1?'':'s');
 
   const offTeam = duty==='blue'?'red':'blue';
-  const pool=ROSTER.filter(p=>p.mode!=='leave'&&(p.team===offTeam||p.team==='shared'));
+  const pool=ROSTER.filter(p=>p.mode!=='leave'&&(p.team===offTeam||p.team==='shared')).sort(bySign);
   const ph=document.getElementById('covPool'); ph.innerHTML='';
   const lbl=document.createElement('p'); lbl.className='covgroup';
   lbl.textContent=(offTeam==='blue'?'Blue Team':'Red Team')+' and reserves — off call this block';
@@ -1274,7 +1277,7 @@ function openPicker(cs){
     p.cs+' · block runs '+MD(bs)+' 0700 → '+MD(be)+' 0700';
   const sel=document.getElementById('fWho');
   sel.innerHTML=eligibleFor(p,i).map(x=>
-    `<option value="${x.cs}">${x.cs} — ${x.name} (${x.team==='shared'?'Reserve':x.team==='dispatch'?'Dispatch':x.team==='blue'?'Blue':'Red'})</option>`).join('');
+    `<option value="${x.cs}">${x.cs} — ${x.name} (${x.team==='shared'?'Reserve':x.team==='blue'?'Blue':'Red'}${x.sub==='toc'?' dispatch':''})</option>`).join('');
   ['fStartD','fEndD'].forEach(id=>{
     const el=document.getElementById(id);
     el.min=dInput(bs); el.max=dInput(be);
@@ -1365,7 +1368,7 @@ function holderAt(p,t){
 /* signature of the whole call picture, used to find the next change */
 function callSig(t){
   const i=blockIndex(new Date(t)), wh=weekHour(new Date(t));
-  return onCallSet(i).concat(ROSTER.filter(p=>p.team==='dispatch'&&p.mode!=='leave'))
+  return onCallSet(i)
     .map(p=>p.cs+':'+holderAt(p,t).person.cs+':'+(isOn(p,wh)?1:0)).join('|');
 }
 function nextChange(t){
@@ -1388,7 +1391,6 @@ function liveRow(p,t,opts){
   }
   const duty = p.mode==='oncall' ? ['status on','On-call']
              : isOn(p,wh) ? ['status on','On Duty']
-             : p.team==='dispatch' ? ['status','Off']
              : ['status','On Call'];   /* holding the block, just off their regular shift */
   const phones=who.phones.slice(0,2).map((ph,idx)=>
     `<a class="callbtn${idx===0?' primary':''}" href="${telify(ph[1])}"><small>${ph[0]}</small>${ph[1]}</a>`).join('');
@@ -1428,11 +1430,12 @@ function renderLive(){
   };
 
   const team=ROSTER.filter(p=>p.team===duty&&p.mode==='sched').sort(bySign);
-  sect('Call-out order','Listed by call sign. The whole team is on call for the block — <b>On Duty</b> means they are also inside their regular shift hours right now. Coverage swaps are already applied.',team);
+  sect('Call-out order — negotiators','Listed by call sign. The whole team is on call for the block — <b>On Duty</b> means they are also inside their regular shift hours right now. Coverage swaps are already applied.',
+       team.filter(p=>p.sub!=='toc'));
+  sect('Call-out order — tactical dispatchers','Same block and same team colour, listed after the negotiators.',
+       team.filter(p=>p.sub==='toc'));
   sect('Reserves, tech and psych','Available around the clock regardless of block.',
        ROSTER.filter(p=>p.mode!=='leave'&&p.mode!=='sched'&&(p.team===duty||p.team==='shared')).sort(bySign));
-  sect('Tactical dispatch','Own weekly schedule, in call-sign order.',
-       ROSTER.filter(p=>p.team==='dispatch'&&p.mode!=='leave').sort(bySign));
 
   if(!host.children.length)
     host.innerHTML='<section class="sec"><div class="empty">Nobody is listed as on call at this moment.</div></section>';
@@ -1620,7 +1623,7 @@ function dutyOnDay(p,date){
 /* the windows during that day in which `team` actually holds the block */
 function teamMask(team,ds){
   const de=ds+864e5;
-  if(team==='shared'||team==='dispatch') return [[ds,de]];
+  if(team==='shared') return [[ds,de]];
   const bEnd=blockStart(blockIndex(new Date(ds))+1).getTime();
   const marks=[ds]; if(bEnd>ds&&bEnd<de) marks.push(bEnd); marks.push(de);
   const out=[];
@@ -1656,7 +1659,7 @@ function splitByCover(p,s,e){
 function onCallOnDay(p,date){
   const ds=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();
   if(p.mode==='leave') return [];
-  const base = (p.team==='dispatch'||p.mode==='waterfall') ? dutyOnDay(p,date) : [[ds,ds+864e5]];
+  const base = p.mode==='waterfall' ? dutyOnDay(p,date) : [[ds,ds+864e5]];
   return intersect(base, teamMask(p.team,ds));
 }
 function piecesOnDay(p,date){
@@ -1735,9 +1738,10 @@ function renderDay(){
     const h=document.createElement('p'); h.className='daygroup'; h.textContent=label; body.appendChild(h);
     rows.forEach(r=>body.appendChild(r));
   };
-  group('On call — team holding the block', ROSTER.filter(p=>(p.team==='blue'||p.team==='red')&&p.mode==='sched'));
-  group('Reserves, tech and psych', ROSTER.filter(p=>p.mode!=='leave'&&p.mode!=='sched'&&p.team!=='dispatch'));
-  group('Tactical dispatch', ROSTER.filter(p=>p.team==='dispatch'));
+  const onBlock=ROSTER.filter(p=>(p.team==='blue'||p.team==='red')&&p.mode==='sched');
+  group('On call — negotiators', onBlock.filter(p=>p.sub!=='toc'));
+  group('On call — tactical dispatchers', onBlock.filter(p=>p.sub==='toc'));
+  group('Reserves, tech and psych', ROSTER.filter(p=>p.mode!=='leave'&&p.mode!=='sched'));
   if(!body.children.length)
     body.innerHTML='<div class="empty">Nobody is scheduled on this date.</div>';
 }
