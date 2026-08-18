@@ -388,9 +388,11 @@ button.cal-cell:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 .daygroup{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:14px 0 6px}
 .daygroup:first-child{margin-top:0}
 /* ---------- published data bar ---------- */
-.pubbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);
-  border:1px solid var(--line-soft);border-radius:9px;padding:10px 12px;margin:14px 0 6px;
-  font-family:var(--mono);font-size:12px;color:var(--muted)}
+.pubbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:transparent;
+  border:1px solid var(--line-soft);border-radius:9px;padding:9px 12px;margin:14px 0 6px;
+  font-size:12.5px;line-height:1.5;color:var(--dim)}
+.pubbar.bad{background:var(--amber-bg);border-color:var(--amber);color:var(--text)}
+.pubbar.bad b{color:var(--amber)}
 .pubbar b{color:var(--text);font-weight:600}
 .pubbar code{background:var(--bg);border:1px solid var(--line-soft);border-radius:4px;padding:1px 5px;font-size:11px}
 .pubbar .pubacts{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
@@ -563,15 +565,9 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       <p class="sec-note">Update a member when someone joins, leaves, changes phones or changes hours. Changes flow through to every other tab.</p>
       <div class="editbar">
         <button class="btn primary" id="addMember">Add member</button>
-        <button class="btn" id="expRoster">Copy roster backup</button>
-        <button class="btn" id="impRoster">Restore from backup</button>
-        <button class="btn" id="dlRoster">Download roster.json</button>
-        <button class="btn" id="dlCoverage">Download coverage.json</button>
-        <button class="btn quiet" id="resetRoster">Reset to original sheet</button>
       </div>
-      <p class="savenote" id="edSaveNote">Edits save to this browser only. To push them to <b>every</b> phone and laptop:
-      press <b>Download roster.json</b>, replace <code>data/roster.json</code> in the GitHub repo with that file, and let Netlify redeploy.
-      Every device picks up the new version the next time the page loads.</p>
+      <p class="savenote" id="edSaveNote">Changes made here apply to <b>this device only</b> and are not visible to the rest of the team.
+      To change the roster for everyone, contact whoever maintains this site. <b>Refresh</b> above reloads the team roster and clears local changes.</p>
       <div class="pubbar" id="pubBar"></div>
       <div id="edWarn"></div>
       <div id="edFlash" aria-live="polite"></div>
@@ -639,25 +635,10 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
     </div>
   </div>
 
-  <div class="overlay" id="importer" hidden>
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="imTitle">
-      <header><h3 id="imTitle">Restore from backup</h3>
-        <p class="hint">Paste roster text produced by <b>Copy roster backup</b>. This replaces the whole roster.</p></header>
-      <div class="body">
-        <div class="formerr" id="imErr" hidden></div>
-        <textarea class="fin" id="imText" rows="9" style="font-size:12px;resize:vertical"></textarea>
-      </div>
-      <footer style="margin:0;border-top:1px solid var(--line)">
-        <button class="btn" id="imCancel" style="flex:1">Cancel</button>
-        <button class="btn primary" id="imSave" style="flex:1">Replace roster</button>
-      </footer>
-    </div>
-  </div>
-
   <div class="overlay" id="daySheet" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
       <header>
-        <h3 id="dayTitle">—</h3>
+        <h3 id="dayTitle">&mdash;</h3>
         <p class="hint" id="dayHint"></p>
       </header>
       <div class="body" id="dayBody"></div>
@@ -1660,32 +1641,6 @@ function purgeCallSign(cs){
 }
 function closeEditor(){ document.getElementById('editor').hidden=true; editing=null; }
 
-/* ---- backup / restore ---- */
-function exportRoster(){
-  const txt=JSON.stringify(ROSTER.map(p=>{const c=Object.assign({},p);delete c.days;return c;}),null,1);
-  const b=document.getElementById('expRoster');
-  navigator.clipboard.writeText(txt).then(
-    ()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy roster backup',1600);},
-    ()=>{b.textContent='Copy failed';setTimeout(()=>b.textContent='Copy roster backup',1600);});
-}
-function importRoster(){
-  const el=document.getElementById('imErr');
-  try{
-    const arr=JSON.parse(document.getElementById('imText').value);
-    if(!Array.isArray(arr)||!arr.length) throw 0;
-    if(!arr.every(o=>o&&o.cs&&o.name&&Array.isArray(o.phones))) throw 0;
-    ROSTER=arr.map(hydrate); saveRoster();
-    document.getElementById('importer').hidden=true;
-    renderAll(); renderEdit();
-  }catch(e){ el.textContent='That does not look like a roster backup. Paste the full text produced by Copy roster backup.'; el.hidden=false; }
-}
-function resetRoster(){
-  if(!confirm('Discard all roster edits and go back to the original sheet data?')) return;
-  ROSTER=DEFAULT_ROSTER.map(o=>Object.assign({},o));
-  try{ localStorage.removeItem(ROSTER_KEY); }catch(e){}
-  renderAll(); renderEdit();
-}
-
 /* ================= day detail ================= */
 let daySel=null;
 
@@ -1895,60 +1850,29 @@ async function syncPublished(force){
 function renderPubBar(){
   const el=document.getElementById('pubBar'); if(!el) return;
   const r=pubInfo.roster, local=readLocalRoster();
-  let txt;
-  if(pubInfo.state==='checking') txt='<span class="pubdot"></span>Checking for published updates…';
-  else if(pubInfo.state==='offline')
-    txt='<span class="pubdot bad"></span>No published data file found. This page is running on the roster built into '+
-        '<code>index.html</code>. Publish <code>data/roster.json</code> to share updates across devices.';
-  else{
-    const stamp=r? ('v'+r.version+(r.updated?' · '+r.updated:'')) : '—';
-    txt='<span class="pubdot ok"></span>Published roster <b>'+stamp+'</b>'+
-        (local && local.basis>=(r?r.version:0)
-          ? ' · <span class="pubwarn">this device has unpublished local edits</span>'
-          : ' · in sync');
-  }
-  el.innerHTML=txt+
-    '<span class="pubacts">'+
-    '<button class="btn" id="pubCheck">Check for updates</button>'+
-    '<button class="btn" id="pubForce">Use published copy</button>'+
-    '</span>';
-  const c=document.getElementById('pubCheck'), f=document.getElementById('pubForce');
-  if(c) c.addEventListener('click',()=>syncPublished(false).then(ch=>{ if(!ch) flash('Already up to date',true,''); }));
-  if(f) f.addEventListener('click',()=>{
-    if(!confirm('Discard local edits on this device and load the published copy?')) return;
-    syncPublished(true);
-  });
-}
+  const localEdits = !!(local && local.basis>=(r?r.version:0));
+  let cls='pubbar', txt;
 
-/* ---- files to publish ---- */
-function rosterDoc(){
-  return {
-    version:(pubInfo.roster?pubInfo.roster.version:0)+1,
-    updated:new Date().toISOString().slice(0,10),
-    members:ROSTER.map(p=>{ const c=Object.assign({},p); delete c.days; return c; })
-  };
-}
-function coverageDoc(){
-  const iso=ms=>{ const d=new Date(ms);
-    return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes()); };
-  const windows=[];
-  Object.keys(COV).map(Number).sort((a,b)=>a-b).forEach(i=>
-    allSegs(i).sort((a,b)=>a.s-b.s).forEach(x=>
-      windows.push({covered:x.cs, by:x.by, start:iso(x.s), end:iso(x.e), note:x.note||''})));
-  return {
-    version:(pubInfo.coverage?pubInfo.coverage.version:0)+1,
-    updated:new Date().toISOString().slice(0,10),
-    windows
-  };
-}
-function download(name,text){
-  try{
-    const b=new Blob([text],{type:'application/json'});
-    const u=URL.createObjectURL(b), a=document.createElement('a');
-    a.href=u; a.download=name; document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(u); a.remove(); },0);
-    return true;
-  }catch(e){ return false; }
+  if(pubInfo.state==='checking'){
+    txt='Checking for updates\u2026';
+  }else if(pubInfo.state==='offline'){
+    cls+=' bad';
+    txt='<b>Not connected to the shared roster.</b> You are seeing a built-in copy, '+
+        'so recent changes made by the team may be missing.';
+  }else if(localEdits){
+    cls+=' bad';
+    txt='<b>You have changes only on this device.</b> Nobody else can see them. '+
+        'Tap Refresh to discard them and load the team roster.';
+  }else{
+    txt='Team roster, last updated '+((r&&r.updated)||'\u2014')+'. You are up to date.';
+  }
+  el.className=cls;
+  el.innerHTML=txt+'<span class="pubacts"><button class="btn" id="pubCheck">Refresh</button></span>';
+  const c=document.getElementById('pubCheck');
+  if(c) c.addEventListener('click',()=>{
+    if(localEdits && !confirm('Discard the changes made on this device and load the team roster?')) return;
+    syncPublished(localEdits).then(ch=>{ if(!ch) flash('Already up to date',true,''); });
+  });
 }
 
 /* ================= wiring ================= */
@@ -1995,26 +1919,6 @@ document.getElementById('edSave').addEventListener('click',saveMember);
 document.getElementById('edDelete').addEventListener('click',deleteMember);
 document.getElementById('eMode').addEventListener('change',syncModeFields);
 document.getElementById('editor').addEventListener('click',e=>{if(e.target.id==='editor')closeEditor();});
-document.getElementById('expRoster').addEventListener('click',exportRoster);
-document.getElementById('impRoster').addEventListener('click',()=>{
-  document.getElementById('imText').value=''; document.getElementById('imErr').hidden=true;
-  document.getElementById('importer').hidden=false; document.getElementById('imText').focus();});
-document.getElementById('imCancel').addEventListener('click',()=>document.getElementById('importer').hidden=true);
-document.getElementById('imSave').addEventListener('click',importRoster);
-document.getElementById('importer').addEventListener('click',e=>{if(e.target.id==='importer')document.getElementById('importer').hidden=true;});
-document.getElementById('resetRoster').addEventListener('click',resetRoster);
-document.getElementById('dlRoster').addEventListener('click',()=>{
-  const doc=rosterDoc();
-  flash(download('roster.json',JSON.stringify(doc,null,1))
-    ? 'roster.json v'+doc.version+' downloaded' : 'Download blocked by this browser',
-    true, ' — replace data/roster.json in the repo with it, then redeploy.');
-});
-document.getElementById('dlCoverage').addEventListener('click',()=>{
-  const doc=coverageDoc();
-  flash(download('coverage.json',JSON.stringify(doc,null,1))
-    ? 'coverage.json v'+doc.version+' downloaded ('+doc.windows.length+' windows)' : 'Download blocked by this browser',
-    true, ' — replace data/coverage.json in the repo with it, then redeploy.');
-});
 document.getElementById('dayClose').addEventListener('click',()=>document.getElementById('daySheet').hidden=true);
 document.getElementById('dayPrev').addEventListener('click',()=>stepDay(-1));
 document.getElementById('dayNext').addEventListener('click',()=>stepDay(1));
@@ -2029,7 +1933,6 @@ document.addEventListener('keydown',e=>{
   if(!document.getElementById('daySheet').hidden) document.getElementById('daySheet').hidden=true;
   else if(!document.getElementById('picker').hidden) closePicker();
   else if(!document.getElementById('editor').hidden) closeEditor();
-  else if(!document.getElementById('importer').hidden) document.getElementById('importer').hidden=true;
 });
 document.getElementById('todayBtn').addEventListener('click',()=>{const n=new Date();calY=n.getFullYear();calM=n.getMonth();renderCal(n);});
 

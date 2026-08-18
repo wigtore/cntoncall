@@ -84,16 +84,19 @@ The Edit roster tab shows which version a device is on:
 
 ### To publish
 
-1. Make the changes on any device, in **Edit roster** or **On-call coverage**
-2. Press **Download roster.json** (and/or **Download coverage.json**)
-3. Replace `data/roster.json` in this repo with the downloaded file — the GitHub
-   web editor works fine, including from a phone
-4. Commit. Netlify redeploys, and every device picks it up on next load.
+Edit the JSON in GitHub directly:
 
-The version number increments automatically on download. Any device whose local
-copy predates the new version is overwritten by it; a device with newer local
-edits keeps them until it publishes. **Use published copy** forces a device back
-to the deployed version, discarding its local edits.
+1. Open `data/roster.json` in this repo
+2. Press the pencil icon, make the change, raise `"version"` by one
+3. Commit. Netlify redeploys, and every device picks it up on next load.
+
+Raising `"version"` is what triggers the update — a device ignores a published
+file whose version it has already seen. **Use published copy**, on the Edit
+roster tab, forces a device to pull the deployed version and discard anything
+local.
+
+The in-app **Edit roster** tab changes that device only. It is useful for
+checking a change before committing it, not for publishing.
 
 If the data files are missing or unreachable, the site falls back to the roster
 compiled into `index.html` and says so in the status bar. It never breaks.
