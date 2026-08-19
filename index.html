@@ -399,6 +399,9 @@ button.cal-cell:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 .pubdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dim);margin-right:7px;vertical-align:middle}
 .pubdot.ok{background:var(--blue)} .pubdot.bad{background:var(--amber)}
 .pubwarn{color:var(--amber)}
+.pubsteps{margin:0 0 12px;padding-left:20px;font-size:13.5px;line-height:1.7}
+.pubsteps li{margin-bottom:4px}
+.pubsteps b{color:var(--text)}
 footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:12px;font-family:var(--mono);line-height:1.7}
 
 @media (max-width:560px){
@@ -565,9 +568,10 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       <p class="sec-note">Update a member when someone joins, leaves, changes phones or changes hours. Changes flow through to every other tab.</p>
       <div class="editbar">
         <button class="btn primary" id="addMember">Add member</button>
+        <button class="btn" id="publishBtn">Publish to team</button>
       </div>
-      <p class="savenote" id="edSaveNote">Changes made here apply to <b>this device only</b> and are not visible to the rest of the team.
-      To change the roster for everyone, contact whoever maintains this site. <b>Refresh</b> above reloads the team roster and clears local changes.</p>
+      <p class="savenote" id="edSaveNote">Changes are saved to <b>this device</b> first. When they are ready for everyone, press <b>Publish to team</b>
+      and follow the three steps. <b>Refresh</b> above pulls the team roster back down and clears anything unpublished on this device.</p>
       <div class="pubbar" id="pubBar"></div>
       <div id="edWarn"></div>
       <div id="edFlash" aria-live="polite"></div>
@@ -631,6 +635,28 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
         <button class="btn quiet" id="edDelete">Remove</button>
         <button class="btn" id="edCancel" style="flex:1">Cancel</button>
         <button class="btn primary" id="edSave" style="flex:1">Save</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="overlay" id="pubSheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pubTitle">
+      <header>
+        <h3 id="pubTitle">Publish to team</h3>
+        <p class="hint">Three steps. Takes about a minute, and works from a phone.</p>
+      </header>
+      <div class="body">
+        <ol class="pubsteps">
+          <li>Press <b>Copy</b> below.</li>
+          <li>In GitHub, open the <b>data</b> folder, then <b>roster.json</b>, and press the pencil icon.</li>
+          <li>Select everything in the box, paste, and press <b>Commit changes</b>.</li>
+        </ol>
+        <p class="hint" style="margin:0 0 8px">The site updates for everyone within a minute or two.</p>
+        <textarea class="fin" id="pubText" rows="7" readonly style="font-size:11px;resize:vertical"></textarea>
+      </div>
+      <footer style="margin:0;border-top:1px solid var(--line)">
+        <button class="btn" id="pubClose" style="flex:1">Close</button>
+        <button class="btn primary" id="pubCopy" style="flex:1">Copy</button>
       </footer>
     </div>
   </div>
@@ -1875,6 +1901,27 @@ function renderPubBar(){
   });
 }
 
+/* ---- publishing ---- */
+function rosterDoc(){
+  return {
+    version:(pubInfo.roster?pubInfo.roster.version:0)+1,
+    updated:new Date().toISOString().slice(0,10),
+    members:ROSTER.map(p=>{ const c=Object.assign({},p); delete c.days; return c; })
+  };
+}
+function openPublish(){
+  document.getElementById('pubText').value=JSON.stringify(rosterDoc(),null,1);
+  document.getElementById('pubCopy').textContent='Copy';
+  document.getElementById('pubSheet').hidden=false;
+}
+function copyPublish(){
+  const ta=document.getElementById('pubText'), b=document.getElementById('pubCopy');
+  const done=()=>{ b.textContent='Copied'; setTimeout(()=>{b.textContent='Copy';},2000); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done,()=>{ ta.select(); b.textContent='Press \u2318/Ctrl+C'; });
+  }else{ ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ b.textContent='Press \u2318/Ctrl+C'; } }
+}
+
 /* ================= wiring ================= */
 function renderAll(){
   const now=new Date();
@@ -1914,6 +1961,10 @@ document.getElementById('covNext').addEventListener('click',()=>{covIdx++;render
 document.getElementById('covNow').addEventListener('click',()=>{covIdx=blockIndex(new Date());renderCoverage(new Date());});
 document.getElementById('covReset').addEventListener('click',resetCov);
 document.getElementById('addMember').addEventListener('click',()=>openEditor(null));
+document.getElementById('publishBtn').addEventListener('click',openPublish);
+document.getElementById('pubClose').addEventListener('click',()=>document.getElementById('pubSheet').hidden=true);
+document.getElementById('pubCopy').addEventListener('click',copyPublish);
+document.getElementById('pubSheet').addEventListener('click',e=>{if(e.target.id==='pubSheet')document.getElementById('pubSheet').hidden=true;});
 document.getElementById('edCancel').addEventListener('click',closeEditor);
 document.getElementById('edSave').addEventListener('click',saveMember);
 document.getElementById('edDelete').addEventListener('click',deleteMember);
@@ -1930,7 +1981,8 @@ document.querySelectorAll('#presets [data-preset]').forEach(b=>
 document.getElementById('picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
-  if(!document.getElementById('daySheet').hidden) document.getElementById('daySheet').hidden=true;
+  if(!document.getElementById('pubSheet').hidden) document.getElementById('pubSheet').hidden=true;
+  else if(!document.getElementById('daySheet').hidden) document.getElementById('daySheet').hidden=true;
   else if(!document.getElementById('picker').hidden) closePicker();
   else if(!document.getElementById('editor').hidden) closeEditor();
 });
