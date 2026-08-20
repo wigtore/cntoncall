@@ -5,6 +5,9 @@
   publish = "."
   command = ""
 
+[functions]
+  directory = "netlify/functions"
+
 # Keep the roster out of search engines and out of other people's frames.
 [[headers]]
   for = "/*"
@@ -22,6 +25,11 @@
   for = "/index.html"
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
 
 [[headers]]
   for = "/data/*"

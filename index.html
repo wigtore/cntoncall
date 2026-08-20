@@ -568,10 +568,9 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       <p class="sec-note">Update a member when someone joins, leaves, changes phones or changes hours. Changes flow through to every other tab.</p>
       <div class="editbar">
         <button class="btn primary" id="addMember">Add member</button>
-        <button class="btn" id="publishBtn">Publish to team</button>
       </div>
-      <p class="savenote" id="edSaveNote">Changes are saved to <b>this device</b> first. When they are ready for everyone, press <b>Publish to team</b>
-      and follow the three steps. <b>Refresh</b> above pulls the team roster back down and clears anything unpublished on this device.</p>
+      <p class="savenote" id="edSaveNote">Every change saves for the whole team straight away. Other phones and computers pick it up within a minute,
+      or immediately when they press <b>Refresh</b>.</p>
       <div class="pubbar" id="pubBar"></div>
       <div id="edWarn"></div>
       <div id="edFlash" aria-live="polite"></div>
@@ -635,28 +634,6 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
         <button class="btn quiet" id="edDelete">Remove</button>
         <button class="btn" id="edCancel" style="flex:1">Cancel</button>
         <button class="btn primary" id="edSave" style="flex:1">Save</button>
-      </footer>
-    </div>
-  </div>
-
-  <div class="overlay" id="pubSheet" hidden>
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pubTitle">
-      <header>
-        <h3 id="pubTitle">Publish to team</h3>
-        <p class="hint">Three steps. Takes about a minute, and works from a phone.</p>
-      </header>
-      <div class="body">
-        <ol class="pubsteps">
-          <li>Press <b>Copy</b> below.</li>
-          <li>In GitHub, open the <b>data</b> folder, then <b>roster.json</b>, and press the pencil icon.</li>
-          <li>Select everything in the box, paste, and press <b>Commit changes</b>.</li>
-        </ol>
-        <p class="hint" style="margin:0 0 8px">The site updates for everyone within a minute or two.</p>
-        <textarea class="fin" id="pubText" rows="7" readonly style="font-size:11px;resize:vertical"></textarea>
-      </div>
-      <footer style="margin:0;border-top:1px solid var(--line)">
-        <button class="btn" id="pubClose" style="flex:1">Close</button>
-        <button class="btn primary" id="pubCopy" style="flex:1">Copy</button>
       </footer>
     </div>
   </div>
@@ -1329,6 +1306,7 @@ function renderCoverage(now){
     if(!COV[i][cs].length) delete COV[i][cs];
     if(!Object.keys(COV[i]).length) delete COV[i];
     saveCov(); renderCoverage(new Date()); renderLive(); renderRoster(new Date()); renderCal(new Date());
+    syncUp('Coverage window removed');
   }));
 }
 
@@ -1407,6 +1385,7 @@ function commit(){
   COV[i][pending].push({id:Date.now()+''+Math.floor(Math.random()*999),by:who,s:s0,e:e0,
     note:document.getElementById('fNote').value.trim()});
   saveCov(); closePicker(); renderCoverage(new Date()); renderLive(); renderRoster(new Date()); renderCal(new Date());
+  syncUp('Coverage window added');
 }
 function closePicker(){ document.getElementById('picker').hidden=true; pending=null; }
 
@@ -1631,8 +1610,8 @@ function saveMember(){
   }else{
     ROSTER.push(obj);
   }
-  const ok=saveRoster(); closeEditor(); renderAll(); renderEdit();
-  flash(cs+' '+name, ok);
+  saveRoster(); closeEditor(); renderAll(); renderEdit();
+  syncUp(cs+' '+name);
 }
 function deleteMember(){
   if(!editing) return;
@@ -1641,8 +1620,8 @@ function deleteMember(){
   const gone=editing+' '+p.name;
   ROSTER=ROSTER.filter(x=>x.cs!==editing);
   purgeCallSign(editing);
-  const ok=saveRoster(); closeEditor(); renderAll(); renderEdit();
-  flash('Removed '+gone, ok);
+  saveRoster(); closeEditor(); renderAll(); renderEdit();
+  syncUp('Removed '+gone);
 }
 /* keep coverage records consistent with roster edits */
 function remapCallSign(oldCs,newCs){
@@ -1810,116 +1789,162 @@ function renderDay(){
 }
 function stepDay(n){ daySel=new Date(daySel.getTime()+n*864e5); renderDay(); }
 
-/* ================= published data ================= */
-/* index.html ships a built-in roster, but the deployed site also serves
-   data/roster.json and data/coverage.json. Those files are the shared source of
-   truth: publish a new version and every phone picks it up on next load. Local
-   edits are an overlay that only outlive a publish if they were made against
-   that same published version. */
+/* ================= shared server ================= */
+/* /api/data is a Netlify Function backed by Netlify Blobs. Everything the team
+   sees lives there. Local storage is only a cache so the page still works
+   offline and while the first request is in flight. */
+const API='/api/sync';
+let server={state:'checking', version:0, updated:null};
+let pushTimer=null, polling=null;
+
+/* legacy fallbacks, used only if the function is not deployed yet */
 const PUB={roster:'data/roster.json', coverage:'data/coverage.json'};
-let pubInfo={roster:null, coverage:null, state:'checking'};
+let pubInfo={roster:null, coverage:null};
 
-async function fetchJSON(url){
+async function fetchJSON(url,opts){
   try{
-    const r=await fetch(url+(url.includes('?')?'&':'?')+'v='+Date.now(),{cache:'no-store'});
-    if(!r.ok) return null;
-    return await r.json();
-  }catch(e){ return null; }
+    const r=await fetch(url,opts||{cache:'no-store'});
+    let body=null; try{ body=await r.json(); }catch(e){}
+    return {ok:r.ok, status:r.status, body};
+  }catch(e){ return {ok:false, status:0, body:null}; }
 }
 
-function applyPublishedRoster(doc,force){
-  if(!doc||!Array.isArray(doc.members)||!doc.members.length) return false;
-  pubInfo.roster=doc;
-  const local=readLocalRoster();
-  if(!force && local && local.basis>=doc.version) return false;  /* local is current */
-  ROSTER=doc.members.map(hydrate);
-  try{ localStorage.removeItem(ROSTER_KEY); }catch(e){}
-  return true;
+/* ---- shape conversions ---- */
+function membersOut(){ return ROSTER.map(p=>{ const c=Object.assign({},p); delete c.days; return c; }); }
+function windowsOut(){
+  const iso=ms=>{ const d=new Date(ms);
+    return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes()); };
+  const out=[];
+  Object.keys(COV).map(Number).sort((x,y)=>x-y).forEach(i=>
+    allSegs(i).sort((x,y)=>x.s-y.s).forEach(w=>
+      out.push({covered:w.cs, by:w.by, start:iso(w.s), end:iso(w.e), note:w.note||''})));
+  return out;
 }
-function applyPublishedCoverage(doc,force){
-  if(!doc||!Array.isArray(doc.windows)) return false;
-  pubInfo.coverage=doc;
-  const local=readLocalCov();
-  if(!force && local && local.basis>=doc.version) return false;
+function windowsIn(list){
   const out={};
-  doc.windows.forEach((w,n)=>{
+  (list||[]).forEach((w,n)=>{
     const s=new Date(w.start).getTime(), e=new Date(w.end).getTime();
     if(!(e>s)) return;
     let cur=s;
-    while(cur<e){                       /* a window may straddle a handoff */
+    while(cur<e){
       const i=blockIndex(new Date(cur));
       const hi=Math.min(e, blockStart(i+1).getTime());
       out[i]=out[i]||{}; out[i][w.covered]=out[i][w.covered]||[];
-      out[i][w.covered].push({id:'pub'+n+'_'+cur,by:w.by,s:cur,e:hi,note:w.note||''});
+      out[i][w.covered].push({id:'srv'+n+'_'+cur, by:w.by, s:cur, e:hi, note:w.note||''});
       cur=hi;
     }
   });
-  COV=out;
-  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  return out;
+}
+function applyDoc(doc){
+  if(!doc||!Array.isArray(doc.members)||!doc.members.length) return false;
+  ROSTER=doc.members.map(hydrate);
+  COV=windowsIn(doc.windows);
+  server.version=doc.version||0; server.updated=doc.updated||null;
+  try{
+    localStorage.setItem(ROSTER_KEY,JSON.stringify({basis:server.version,members:doc.members}));
+    localStorage.setItem(STORE_KEY,JSON.stringify({basis:server.version,cov:COV}));
+  }catch(e){}
   return true;
 }
 
-async function syncPublished(force){
-  pubInfo.state='checking'; renderPubBar();
-  const [r,c]=await Promise.all([fetchJSON(PUB.roster), fetchJSON(PUB.coverage)]);
-  if(!r && !c){ pubInfo.state='offline'; renderPubBar(); return false; }
-  let changed=false;
-  if(applyPublishedRoster(r,force)) changed=true;
-  if(applyPublishedCoverage(c,force)) changed=true;
-  pubInfo.state='ok';
-  if(changed){ renderAll(); renderEdit(); }
+/* ---- read ---- */
+async function pullServer(silent){
+  const r=await fetchJSON(API);
+  if(r.ok && r.body && Array.isArray(r.body.members) && r.body.members.length){
+    const changed = r.body.version!==server.version;
+    server.state='live';
+    if(changed){ applyDoc(r.body); renderAll(); renderEdit(); }
+    else { server.version=r.body.version; server.updated=r.body.updated; }
+    renderPubBar();
+    return changed;
+  }
+  if(r.ok && r.body && r.body.members===null){      /* store is empty — seed it */
+    server.state='empty'; server.version=r.body.version||0;
+    renderPubBar();
+    return false;
+  }
+  server.state = r.status===0 ? 'nofunction' : 'nofunction';
+  if(!silent) await pullFiles();
   renderPubBar();
-  if(changed) flash('Loaded published data v'+((r&&r.version)||'?'), true, 'Local edits on this device were replaced.');
-  return changed;
+  return false;
+}
+/* fallback: the static json files, if the function is not up */
+async function pullFiles(){
+  const r=await fetchJSON(PUB.roster);
+  if(r.ok && r.body && Array.isArray(r.body.members)){
+    pubInfo.roster=r.body;
+    const local=readLocalRoster();
+    if(!(local && local.basis>=r.body.version)){ ROSTER=r.body.members.map(hydrate); renderAll(); renderEdit(); }
+  }
+  const c=await fetchJSON(PUB.coverage);
+  if(c.ok && c.body && Array.isArray(c.body.windows)){
+    pubInfo.coverage=c.body;
+    const local=readLocalCov();
+    if(!(local && local.basis>=c.body.version)){ COV=windowsIn(c.body.windows); renderAll(); renderEdit(); }
+  }
+}
+
+/* ---- write ---- */
+async function pushServer(){
+  const r=await fetchJSON(API,{method:'PUT',cache:'no-store',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({baseVersion:server.version, members:membersOut(), windows:windowsOut()})});
+  if(r.ok && r.body){
+    server.state='live';
+    server.version=r.body.version; server.updated=r.body.updated;
+    try{
+      localStorage.setItem(ROSTER_KEY,JSON.stringify({basis:server.version,members:membersOut()}));
+      localStorage.setItem(STORE_KEY,JSON.stringify({basis:server.version,cov:COV}));
+    }catch(e){}
+    renderPubBar();
+    return {ok:true};
+  }
+  if(r.status===409){ renderPubBar(); return {ok:false,reason:'conflict'}; }
+  if(r.status===503){ renderPubBar(); return {ok:false,reason:(r.body&&r.body.error)||'unavailable'}; }
+  renderPubBar();
+  return {ok:false,reason:'offline'};
+}
+/* every edit funnels through here */
+function syncUp(label){
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(async()=>{
+    const res=await pushServer();
+    if(res.ok) flash(label,true,' \u2014 saved for everyone.');
+    else if(res.reason==='conflict') flash(label,false,' \u2014 not saved: someone else saved first. Press Refresh, then make the change again.');
+    else if(res.reason==='not_configured') flash(label,false,' \u2014 not saved: sharing is not switched on for this site yet.');
+    else flash(label,false,' \u2014 not saved to the team: could not reach the server. It is stored on this device only.');
+  },250);
+}
+
+async function startSync(){
+  await pullServer(false);
+  if(server.state==='empty') await pushServer();   /* first visit seeds the shared copy */
+  clearInterval(polling);
+  polling=setInterval(()=>{ if(document.visibilityState!=='hidden') pullServer(true); }, 60000);
 }
 
 function renderPubBar(){
   const el=document.getElementById('pubBar'); if(!el) return;
-  const r=pubInfo.roster, local=readLocalRoster();
-  const localEdits = !!(local && local.basis>=(r?r.version:0));
+  const when=server.updated
+    ? new Date(server.updated).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : null;
   let cls='pubbar', txt;
 
-  if(pubInfo.state==='checking'){
-    txt='Checking for updates\u2026';
-  }else if(pubInfo.state==='offline'){
-    cls+=' bad';
-    txt='<b>Not connected to the shared roster.</b> You are seeing a built-in copy, '+
-        'so recent changes made by the team may be missing.';
-  }else if(localEdits){
-    cls+=' bad';
-    txt='<b>You have changes only on this device.</b> Nobody else can see them. '+
-        'Tap Refresh to discard them and load the team roster.';
+  if(server.state==='checking'){
+    txt='Connecting\u2026';
+  }else if(server.state==='live'){
+    txt='Live. Everyone sees the same roster'+(when?', last changed '+when:'')+'.';
+  }else if(server.state==='empty'){
+    txt='Setting up the shared roster\u2026';
   }else{
-    txt='Team roster, last updated '+((r&&r.updated)||'\u2014')+'. You are up to date.';
+    cls+=' bad';
+    txt='<b>Not connected.</b> You are seeing a stored copy, so recent changes by others may be missing, '+
+        'and anything you change now stays on this device until the connection comes back.';
   }
   el.className=cls;
   el.innerHTML=txt+'<span class="pubacts"><button class="btn" id="pubCheck">Refresh</button></span>';
   const c=document.getElementById('pubCheck');
-  if(c) c.addEventListener('click',()=>{
-    if(localEdits && !confirm('Discard the changes made on this device and load the team roster?')) return;
-    syncPublished(localEdits).then(ch=>{ if(!ch) flash('Already up to date',true,''); });
-  });
-}
-
-/* ---- publishing ---- */
-function rosterDoc(){
-  return {
-    version:(pubInfo.roster?pubInfo.roster.version:0)+1,
-    updated:new Date().toISOString().slice(0,10),
-    members:ROSTER.map(p=>{ const c=Object.assign({},p); delete c.days; return c; })
-  };
-}
-function openPublish(){
-  document.getElementById('pubText').value=JSON.stringify(rosterDoc(),null,1);
-  document.getElementById('pubCopy').textContent='Copy';
-  document.getElementById('pubSheet').hidden=false;
-}
-function copyPublish(){
-  const ta=document.getElementById('pubText'), b=document.getElementById('pubCopy');
-  const done=()=>{ b.textContent='Copied'; setTimeout(()=>{b.textContent='Copy';},2000); };
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(ta.value).then(done,()=>{ ta.select(); b.textContent='Press \u2318/Ctrl+C'; });
-  }else{ ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ b.textContent='Press \u2318/Ctrl+C'; } }
+  if(c) c.addEventListener('click',()=>pullServer(false).then(ch=>{ if(!ch) flash('Already up to date',true,''); }));
 }
 
 /* ================= wiring ================= */
@@ -1961,10 +1986,6 @@ document.getElementById('covNext').addEventListener('click',()=>{covIdx++;render
 document.getElementById('covNow').addEventListener('click',()=>{covIdx=blockIndex(new Date());renderCoverage(new Date());});
 document.getElementById('covReset').addEventListener('click',resetCov);
 document.getElementById('addMember').addEventListener('click',()=>openEditor(null));
-document.getElementById('publishBtn').addEventListener('click',openPublish);
-document.getElementById('pubClose').addEventListener('click',()=>document.getElementById('pubSheet').hidden=true);
-document.getElementById('pubCopy').addEventListener('click',copyPublish);
-document.getElementById('pubSheet').addEventListener('click',e=>{if(e.target.id==='pubSheet')document.getElementById('pubSheet').hidden=true;});
 document.getElementById('edCancel').addEventListener('click',closeEditor);
 document.getElementById('edSave').addEventListener('click',saveMember);
 document.getElementById('edDelete').addEventListener('click',deleteMember);
@@ -1981,8 +2002,7 @@ document.querySelectorAll('#presets [data-preset]').forEach(b=>
 document.getElementById('picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
-  if(!document.getElementById('pubSheet').hidden) document.getElementById('pubSheet').hidden=true;
-  else if(!document.getElementById('daySheet').hidden) document.getElementById('daySheet').hidden=true;
+  if(!document.getElementById('daySheet').hidden) document.getElementById('daySheet').hidden=true;
   else if(!document.getElementById('picker').hidden) closePicker();
   else if(!document.getElementById('editor').hidden) closeEditor();
 });
@@ -2010,7 +2030,7 @@ document.querySelectorAll('.themesw button').forEach(b=>
 const _n=new Date(); calY=_n.getFullYear(); calM=_n.getMonth();
 loadCov(); loadRoster(); covIdx=blockIndex(_n);
 renderAll(); renderEdit(); renderPubBar();
-syncPublished(false);   /* the published copy wins over a stale local one */
+startSync();
 setInterval(()=>{const n=new Date();renderBanner(n);renderRoster(n);if(momentT===null)renderLive();renderBand(n);},30000);
 </script>
 </body>
