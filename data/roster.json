@@ -1,6 +1,6 @@
 {
- "version": 1,
- "updated": "2026-08-18",
+ "version": 2,
+ "updated": "2026-08-21T05:04:52.430Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -153,8 +153,8 @@
    "end": 2300
   },
   {
-   "name": "Sgt. R. Newton",
    "cs": "N15",
+   "name": "Sgt. R. Newton",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -165,7 +165,7 @@
     ]
    ],
    "carrier": "T-Mobile",
-   "note": "IOD — see coverage sheet",
+   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 700,
