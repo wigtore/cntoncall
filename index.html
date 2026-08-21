@@ -399,6 +399,7 @@ button.cal-cell:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 .pubdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dim);margin-right:7px;vertical-align:middle}
 .pubdot.ok{background:var(--blue)} .pubdot.bad{background:var(--amber)}
 .pubwarn{color:var(--amber)}
+.pubdetail{display:inline-block;margin-top:5px;font-family:var(--mono);font-size:11px;color:var(--dim)}
 .pubsteps{margin:0 0 12px;padding-left:20px;font-size:13.5px;line-height:1.7}
 .pubsteps li{margin-bottom:4px}
 .pubsteps b{color:var(--text)}
@@ -1794,7 +1795,7 @@ function stepDay(n){ daySel=new Date(daySel.getTime()+n*864e5); renderDay(); }
    sees lives there. Local storage is only a cache so the page still works
    offline and while the first request is in flight. */
 const API='/api/sync';
-let server={state:'checking', version:0, updated:null};
+let server={state:'checking', version:0, updated:null, why:'', detail:''};
 let pushTimer=null, polling=null;
 
 /* legacy fallbacks, used only if the function is not deployed yet */
@@ -1864,7 +1865,12 @@ async function pullServer(silent){
     renderPubBar();
     return false;
   }
-  server.state = r.status===0 ? 'nofunction' : 'nofunction';
+  server.state='nofunction';
+  server.why = r.status===0 ? 'unreachable'
+             : r.status===404 ? 'missing'
+             : (r.body && r.body.error) ? r.body.error
+             : 'http'+r.status;
+  server.detail = (r.body && r.body.message) || '';
   if(!silent) await pullFiles();
   renderPubBar();
   return false;
@@ -1900,10 +1906,13 @@ async function pushServer(){
     renderPubBar();
     return {ok:true};
   }
-  if(r.status===409){ renderPubBar(); return {ok:false,reason:'conflict'}; }
-  if(r.status===503){ renderPubBar(); return {ok:false,reason:(r.body&&r.body.error)||'unavailable'}; }
+  const reason = r.status===409 ? 'conflict'
+               : (r.body && r.body.error) ? r.body.error
+               : r.status===0 ? 'unreachable'
+               : r.status===404 ? 'missing'
+               : 'http'+r.status;
   renderPubBar();
-  return {ok:false,reason:'offline'};
+  return {ok:false, reason, detail:(r.body&&r.body.message)||''};
 }
 /* every edit funnels through here */
 function syncUp(label){
@@ -1919,7 +1928,14 @@ function syncUp(label){
 
 async function startSync(){
   await pullServer(false);
-  if(server.state==='empty') await pushServer();   /* first visit seeds the shared copy */
+  if(server.state==='empty'){
+    const r=await pushServer();                    /* first visit seeds the shared copy */
+    if(!r.ok){
+      server.state='nofunction';
+      server.why=r.reason; server.detail=r.detail||'';
+      renderPubBar();
+    }
+  }
   clearInterval(polling);
   polling=setInterval(()=>{ if(document.visibilityState!=='hidden') pullServer(true); }, 60000);
 }
@@ -1938,13 +1954,36 @@ function renderPubBar(){
     txt='Setting up the shared roster\u2026';
   }else{
     cls+=' bad';
-    txt='<b>Not connected.</b> You are seeing a stored copy, so recent changes by others may be missing, '+
-        'and anything you change now stays on this device until the connection comes back.';
+    const w=server.why;
+    if(w==='missing'){
+      txt='<b>Sharing is not switched on yet.</b> The file <code>netlify/functions/sync.mjs</code> is not on the site. '+
+          'Check it is in the repository at that exact path, then redeploy on Netlify.';
+    }else if(w==='not_configured'){
+      txt='<b>Almost there.</b> The sharing file is installed, but Netlify is missing <code>GITHUB_TOKEN</code> '+
+          'or <code>GITHUB_REPO</code>. Add both under Site configuration \u2192 Environment variables, then redeploy.';
+    }else if(w==='read_failed'||w==='write_failed'){
+      txt='<b>GitHub would not accept the change.</b> Usually one of three things: the key was set to '+
+          '<b>Read-only</b> instead of <b>Contents: Read and write</b>; the key has expired; or your repository\u2019s '+
+          'main branch is called something other than <code>main</code>, in which case add a Netlify variable '+
+          '<code>GITHUB_BRANCH</code> with the right name.'+
+          (server.detail?'<br><span class="pubdetail">'+server.detail+'</span>':'');
+    }else if(w==='unreachable'){
+      txt='<b>No internet connection.</b> You are seeing the last roster this device loaded. '+
+          'It will reconnect on its own.';
+    }else{
+      txt='<b>Not connected.</b> The site could not reach the shared roster'+(server.detail?': '+server.detail:'')+'.';
+    }
+    txt+=' Until then, changes you make stay on this device.';
   }
   el.className=cls;
   el.innerHTML=txt+'<span class="pubacts"><button class="btn" id="pubCheck">Refresh</button></span>';
   const c=document.getElementById('pubCheck');
-  if(c) c.addEventListener('click',()=>pullServer(false).then(ch=>{ if(!ch) flash('Already up to date',true,''); }));
+  if(c) c.addEventListener('click',()=>{
+    /* when nothing is shared yet, Refresh should try the upload again,
+       not report that an empty roster is "up to date" */
+    if(server.state==='empty'||server.state==='nofunction'){ startSync(); return; }
+    pullServer(false).then(ch=>{ if(!ch) flash('Already up to date',true,''); });
+  });
 }
 
 /* ================= wiring ================= */
