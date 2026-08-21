@@ -1,6 +1,6 @@
 {
- "version": 3,
- "updated": "2026-08-21T05:04:57.867Z",
+ "version": 4,
+ "updated": "2026-08-21T05:13:22.323Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -321,8 +321,8 @@
    "end": 1830
   },
   {
-   "name": "R. Nigg",
    "cs": "N12",
+   "name": "**VACANT**",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -333,10 +333,9 @@
     ]
    ],
    "carrier": "",
-   "mode": "sched",
-   "daysLabel": "FRI-SUN",
-   "start": 1830,
-   "end": 700
+   "note": "",
+   "mode": "leave",
+   "daysLabel": ""
   },
   {
    "cs": "N14",
