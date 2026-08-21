@@ -1,6 +1,6 @@
 {
- "version": 2,
- "updated": "2026-08-21T05:04:52.430Z",
+ "version": 3,
+ "updated": "2026-08-21T05:04:57.867Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -339,8 +339,8 @@
    "end": 700
   },
   {
-   "name": "P. Wilks",
    "cs": "N14",
+   "name": "P. Wilks",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -355,7 +355,7 @@
     ]
    ],
    "carrier": "",
-   "note": "Paternity — see coverage sheet",
+   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 1300,
