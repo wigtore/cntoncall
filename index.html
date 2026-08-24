@@ -2115,7 +2115,22 @@ function renderLog(){
 /* ================= password gate ================= */
 let gateMode='login';
 
-function showGate(mode){
+function showGate(mode,detail){
+  if(mode==='broken'){
+    gateMode='broken';
+    document.getElementById('gatePw').hidden=true;
+    document.getElementById('gatePw2').hidden=true;
+    document.getElementById('gateGo').textContent='Try again';
+    document.getElementById('gateSub').textContent=
+      'This is not a password problem — there is nothing you can type here that will help.';
+    gateErr(detail||'The site could not reach the sign-in service.');
+    document.getElementById('gateNote').textContent=
+      'Whoever maintains this site should check that it is deployed and set up correctly.';
+    document.getElementById('gate').hidden=false;
+    document.getElementById('admin').hidden=true;
+    return;
+  }
+  document.getElementById('gatePw').hidden=false;
   gateMode = mode==='setup' ? 'setup' : 'login';
   document.getElementById('gatePw2').hidden = gateMode!=='setup';
   document.getElementById('gateSub').textContent = gateMode==='setup'
@@ -2144,6 +2159,7 @@ function rememberPass(p){ pass=p; try{ localStorage.setItem(PASS_KEY,p); }catch(
 
 async function gateSubmit(){
   const btn=document.getElementById('gateGo');
+  if(gateMode==='broken'){ location.reload(); return; }
   const p1=document.getElementById('gatePw').value;
   if(!p1){ gateErr('Enter the password.'); return; }
   btn.disabled=true;
@@ -2195,6 +2211,14 @@ async function changePassword(){
 async function bootAuth(){
   const r=await fetchJSON('/api/auth',{cache:'no-store'});
   if(r.ok && r.body && r.body.status==='needs_setup'){ showGate('setup'); return; }
+  if(!r.ok){                       /* server problem, not a password problem */
+    const why = r.status===404 ? 'The sign-in service is not installed on this site yet.'
+              : (r.body && r.body.message) ? r.body.message
+              : r.status===0 ? 'No internet connection.'
+              : 'The site could not reach the sign-in service.';
+    showGate('broken', why);
+    return;
+  }
   if(!pass){ showGate('login'); return; }
   hideGate();
   await startSync();

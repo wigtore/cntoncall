@@ -105,3 +105,15 @@ On netlify.com open **Logs**, then **Functions**, then **sync**.
 | --- | --- |
 | `not_configured` | One of the two variables in step 11 is missing or misspelt |
 | `read_failed` or `write_failed` | The GitHub key expired, or was not given **Contents: Read and write** |
+
+## If nobody knows the password
+
+There is no master password and no way to look one up — it is stored only as a
+scrambled fingerprint. To start over:
+
+1. On GitHub open the repository, then the **data** folder
+2. Click **auth.json**, then the **trash can** icon
+3. Scroll down and **Commit changes**
+
+The next person to open the site is asked to choose a new team password. The
+roster and coverage are in separate files and are not affected.
