@@ -1,6 +1,6 @@
 {
- "version": 4,
- "updated": "2026-08-24T16:54:04.347Z",
+ "version": 5,
+ "updated": "2026-08-24T16:54:44.013Z",
  "events": [
   {
    "id": "tr178759038623464",
@@ -23,6 +23,15 @@
   {
    "id": "tr178759044272525",
    "date": "2026-10-23",
+   "title": "CNT Training Day",
+   "hours": "0700-1700",
+   "location": "TBD",
+   "hosts": "",
+   "note": ""
+  },
+  {
+   "id": "tr178759048230858",
+   "date": "2026-11-13",
    "title": "CNT Training Day",
    "hours": "0700-1700",
    "location": "TBD",
