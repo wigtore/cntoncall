@@ -1,6 +1,6 @@
 {
- "version": 9,
- "updated": "2026-08-24T20:21:10.484Z",
+ "version": 10,
+ "updated": "2026-08-24T20:21:47.834Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -280,8 +280,8 @@
    "end": 1600
   },
   {
-   "name": "K. Wiebe",
    "cs": "N8",
+   "name": "K. Wiebe",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -296,11 +296,9 @@
     ]
    ],
    "carrier": "AT&T",
-   "note": "Maternity — see coverage sheet",
-   "mode": "sched",
-   "daysLabel": "FRI-SUN",
-   "start": 1300,
-   "end": 2300
+   "note": "IOD - Est. return December 2026",
+   "mode": "leave",
+   "daysLabel": ""
   },
   {
    "name": "E. Brennan",
