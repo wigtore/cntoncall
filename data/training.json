@@ -1,6 +1,6 @@
 {
- "version": 12,
- "updated": "2026-08-24T20:25:22.878Z",
+ "version": 13,
+ "updated": "2026-08-24T21:43:45.769Z",
  "events": [
   {
    "id": "tr178759038623464",
@@ -17,8 +17,8 @@
    "title": "CNT Training Day",
    "hours": "0700-1700",
    "location": "TBD",
-   "hosts": "",
-   "note": ""
+   "hosts": "Yue, Wilks, OCSD CNT",
+   "note": "Special Circumstances (negotiations with known persons, etc.)"
   },
   {
    "id": "tr178759044272525",
