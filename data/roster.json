@@ -1,6 +1,6 @@
 {
- "version": 6,
- "updated": "2026-08-21T15:53:15.955Z",
+ "version": 1,
+ "updated": "2026-08-18",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -153,8 +153,8 @@
    "end": 2300
   },
   {
-   "cs": "N15",
    "name": "Sgt. R. Newton",
+   "cs": "N15",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -165,7 +165,7 @@
     ]
    ],
    "carrier": "T-Mobile",
-   "note": "",
+   "note": "IOD — see coverage sheet",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 700,
@@ -321,8 +321,8 @@
    "end": 1830
   },
   {
+   "name": "R. Nigg",
    "cs": "N12",
-   "name": "**VACANT**",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -333,13 +333,14 @@
     ]
    ],
    "carrier": "",
-   "note": "",
-   "mode": "leave",
-   "daysLabel": ""
+   "mode": "sched",
+   "daysLabel": "FRI-SUN",
+   "start": 1830,
+   "end": 700
   },
   {
-   "cs": "N14",
    "name": "P. Wilks",
+   "cs": "N14",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -354,7 +355,7 @@
     ]
    ],
    "carrier": "",
-   "note": "",
+   "note": "Paternity — see coverage sheet",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 1300,

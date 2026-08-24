@@ -19,6 +19,7 @@
   --red:#FF6B60;  --red-bg:#46201F;  --red-a:rgba(255,107,96,.16);
   --amber:#EFB251; --amber-bg:#3B2C13;
   --shared:#9C8BE0; --shared-bg:#2A2445;
+  --train:#6FD3C0; --train-bg:#123A34;
   --on-accent:#0E1116;                 /* text sitting on a saturated bar */
   --oninv-dim:rgba(14,17,22,.62);      /* muted text on an inverted button */
   --blur-bg:rgba(16,20,27,.95);
@@ -37,6 +38,7 @@
   --red:#B92A20;  --red-bg:#FADCD9;  --red-a:rgba(185,42,32,.15);
   --amber:#8A5A08; --amber-bg:#F7E6C2;
   --shared:#54399E; --shared-bg:#E6DFF9;
+  --train:#0B6B58; --train-bg:#D3F0E8;
   --on-accent:#FFFFFF;
   --oninv-dim:rgba(238,241,246,.72);
   --blur-bg:rgba(238,241,246,.95);
@@ -441,6 +443,28 @@ button.cal-cell:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 .adminbody{background:var(--panel);border:1px solid var(--line-soft);border-radius:10px;padding:14px;margin-bottom:10px}
 .adminbody[hidden]{display:none}
 .adminnote{font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.55}
+/* ---------- training days ---------- */
+.cal-cell.hastrain .tag{bottom:17px}
+.trainstrip{position:absolute;left:0;right:0;bottom:0;background:var(--train);color:var(--train-bg);
+  font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.trainbox{border:1px solid var(--train);background:var(--train-bg);border-radius:9px;padding:10px 12px;margin-bottom:12px}
+.trainbox h4{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  margin:0 0 4px;color:var(--train)}
+.trainbox dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;
+  font-family:var(--mono);font-size:11.5px}
+.trainbox dt{color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-size:9.5px;padding-top:2px}
+.trainbox dd{margin:0;color:var(--text)}
+.trainrow{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line-soft);
+  border-left:3px solid var(--train);border-radius:8px;padding:8px 10px;margin-bottom:6px;flex-wrap:wrap}
+.trainrow .d{font-family:var(--mono);font-size:12px;color:var(--text);flex:0 0 58px}
+.trainrow .t{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.trainrow .m{font-family:var(--mono);font-size:11px;color:var(--muted);flex:1 1 100%}
+.trainrow .acts{margin-left:auto;display:flex;gap:6px}
+.adminsec{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}
+.adminsec:first-child{border-top:0;margin-top:0;padding-top:0}
+.adminsec h3{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;margin:0 0 4px}
 footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:12px;font-family:var(--mono);line-height:1.7}
 
 @media (max-width:560px){
@@ -764,6 +788,35 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       <span>Admin</span><span class="chev" aria-hidden="true">&#9662;</span>
     </button>
     <div class="adminbody" id="adminBody" hidden>
+      <div class="adminsec">
+        <h3>Training days</h3>
+        <p class="adminnote">Marks a date on the On-Call Calendar. Tap the day to see the full details.</p>
+        <div class="formerr" id="trErr" hidden></div>
+        <div class="formrow">
+          <label style="flex:0 0 150px">Date<input class="fin" type="date" id="trDate"></label>
+          <label>Title<input class="fin" id="trTitle" placeholder="CNT Training Day" style="font-family:var(--body)"></label>
+        </div>
+        <div class="formrow">
+          <label>Hours<input class="fin" id="trHours" placeholder="1800-2100"></label>
+          <label>Location<input class="fin" id="trLoc" placeholder="EOC" style="font-family:var(--body)"></label>
+        </div>
+        <div class="formrow">
+          <label style="flex:1 1 100%">Hosts<input class="fin" id="trHosts" placeholder="Office of Professional Standards" style="font-family:var(--body)"></label>
+        </div>
+        <div class="formrow">
+          <label style="flex:1 1 100%">Notes (optional)<input class="fin" id="trNote" placeholder="Bring radios" style="font-family:var(--body)"></label>
+        </div>
+        <div class="editbar">
+          <button class="btn primary" id="trSave">Add training day</button>
+          <button class="btn quiet" id="trCancel" hidden>Cancel edit</button>
+        </div>
+        <div id="trFlash"></div>
+        <p class="subhead" style="margin-top:14px">Scheduled</p>
+        <div id="trList"></div>
+      </div>
+
+      <div class="adminsec">
+      <h3>Site password</h3>
       <p class="adminnote">Changes the password everyone uses to open this site. Everyone will be signed out and will need the new one.</p>
       <div class="formerr" id="pwErr" hidden></div>
       <div class="formrow">
@@ -772,6 +825,7 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       </div>
       <button class="btn primary" id="pwSave">Change password</button>
       <div id="pwFlash"></div>
+      </div>
     </div>
   </section>
 
@@ -852,6 +906,7 @@ const DEFAULT_ROSTER=[
   P('A. Yu','TOC7','blue','toc','Tactical Dispatcher',[['Cell','626-423-9155']],{mode:'sched',days:'WED-FRI',start:600,end:1800},'T-Mobile')
 ];
 let ROSTER = DEFAULT_ROSTER.map(o=>Object.assign({},o));
+let TRAINING = [];   /* [{id,date:'YYYY-MM-DD',title,hosts,hours,location,note}] */
 
 /* ---- roster persistence ---- */
 /* Some contexts (private windows, sandboxed preview panes, some file:// setups)
@@ -1046,8 +1101,11 @@ function renderCal(now){
     }
     const isToday = c.d.toDateString()===now.toDateString();
     if(isToday) el.classList.add('today');
+    const tr=trainingOn(c.d);
+    if(tr) el.classList.add('hastrain');
     el.innerHTML=`<span class="d">${c.n}</span>`+
       (dayHasCoverage(c.d)?'<span class="dot"></span>':'')+
+      (tr?`<span class="trainstrip">${esc(tr.title||'Training')}</span>`:'')+
       (isThuHandoff&&!c.pad?`<span class="tag">0700 → ${dayTeam==='blue'?'Blue':'Red'}</span>`:'');
     el.setAttribute('aria-label','Show who is on call '+MDY(c.d));
     el.addEventListener('click',()=>openDay(c.d));
@@ -1730,6 +1788,12 @@ function purgeCallSign(cs){
 }
 function closeEditor(){ document.getElementById('editor').hidden=true; editing=null; }
 
+/* ================= training days ================= */
+const dateKey = d => d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+const trainingOn = d => TRAINING.find(t=>t.date===dateKey(d)) || null;
+function esc(t){ return String(t==null?'':t)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 /* ================= day detail ================= */
 let daySel=null;
 
@@ -1837,6 +1901,16 @@ function renderDay(){
       `<b class="${t2==='blue'?'t-blue':'t-red'}">${t2==='blue'?'Blue':'Red'}</b> after`;
 
   const body=document.getElementById('dayBody'); body.innerHTML='';
+  const tr=trainingOn(date);
+  if(tr){
+    const rows=[['Hours',tr.hours],['Location',tr.location],['Hosts',tr.hosts],['Notes',tr.note]]
+      .filter(([,v])=>v && String(v).trim())
+      .map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+    const box=document.createElement('div');
+    box.className='trainbox';
+    box.innerHTML=`<h4>${esc(tr.title||'Training day')}</h4>`+(rows?`<dl>${rows}</dl>`:'');
+    body.appendChild(box);
+  }
   const rowFor=p=>{
     const pcs=piecesOnDay(p,date);
     if(!pcs.length) return null;
@@ -1898,6 +1972,7 @@ async function fetchJSON(url,opts){
 
 /* ---- shape conversions ---- */
 function membersOut(){ return ROSTER.map(p=>{ const c=Object.assign({},p); delete c.days; return c; }); }
+function trainingOut(){ return TRAINING.slice().sort((a,b)=>a.date<b.date?-1:1); }
 function windowsOut(){
   const iso=ms=>{ const d=new Date(ms);
     return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes()); };
@@ -1927,6 +2002,7 @@ function applyDoc(doc){
   if(!doc||!Array.isArray(doc.members)||!doc.members.length) return false;
   ROSTER=doc.members.map(hydrate);
   COV=windowsIn(doc.windows);
+  TRAINING=Array.isArray(doc.training)?doc.training:[];
   server.version=doc.version||0; server.updated=doc.updated||null;
   try{
     localStorage.setItem(ROSTER_KEY,JSON.stringify({basis:server.version,members:doc.members}));
@@ -1942,7 +2018,7 @@ async function pullServer(silent){
   if(r.ok && r.body && Array.isArray(r.body.members) && r.body.members.length){
     const changed = r.body.version!==server.version;
     server.state='live';
-    if(changed){ applyDoc(r.body); renderAll(); renderEdit(); }
+    if(changed){ applyDoc(r.body); renderAll(); renderEdit(); renderTraining(); }
     else { server.version=r.body.version; server.updated=r.body.updated; }
     renderPubBar();
     return changed;
@@ -1971,7 +2047,8 @@ async function pullFiles(){ /* intentionally empty */ }
 async function pushServer(){
   const r=await fetchJSON(API,{method:'PUT',cache:'no-store',
     headers:authHeaders(),
-    body:JSON.stringify({baseVersion:server.version, members:membersOut(), windows:windowsOut(), by:actor})});
+    body:JSON.stringify({baseVersion:server.version, members:membersOut(),
+      windows:windowsOut(), training:trainingOut(), by:actor})});
   if(r.status===401){ showGate('again'); return {ok:false,reason:'auth'}; }
   if(r.ok && r.body){
     server.state='live';
@@ -2182,6 +2259,96 @@ async function gateSubmit(){
   finally{ btn.disabled=false; }
 }
 
+/* ---- admin: training days ---- */
+let trEditing=null;
+
+function trErr(msg){
+  const el=document.getElementById('trErr');
+  el.textContent=msg||''; el.hidden=!msg;
+}
+function trFlash(msg){
+  const el=document.getElementById('trFlash');
+  el.innerHTML='<div class="flashbar">'+esc(msg)+'</div>';
+  clearTimeout(trFlash._t); trFlash._t=setTimeout(()=>{el.innerHTML='';},6000);
+}
+function niceDate(key){
+  const [y,m,d]=key.split('-').map(Number);
+  return DOW[new Date(y,m-1,d).getDay()]+' '+m+'/'+d;
+}
+function renderTraining(){
+  const host=document.getElementById('trList'); if(!host) return;
+  const inMonth=t=>{ const [y,m]=t.date.split('-').map(Number); return y===calY && m===calM+1; };
+  const list=TRAINING.slice().sort((a,b)=>a.date<b.date?-1:1);
+  const shown=list.filter(inMonth), rest=list.filter(t=>!inMonth(t));
+  host.innerHTML='';
+  const add=(arr,label)=>{
+    if(!arr.length) return;
+    if(label){ const h=document.createElement('p'); h.className='covgroup'; h.textContent=label; host.appendChild(h); }
+    arr.forEach(t=>{
+      const meta=[t.hours,t.location,t.hosts].filter(Boolean).join(' \u00b7 ');
+      const row=document.createElement('div');
+      row.className='trainrow';
+      row.innerHTML='<span class="d">'+niceDate(t.date)+'</span>'+
+        '<span class="t">'+esc(t.title||'Training day')+'</span>'+
+        '<span class="acts"><button class="btn" data-tredit="'+t.id+'">Edit</button>'+
+        '<button class="btn quiet" data-trdel="'+t.id+'">Remove</button></span>'+
+        (meta?'<span class="m">'+esc(meta)+'</span>':'');
+      host.appendChild(row);
+    });
+  };
+  add(shown, MONTHS[calM]+' '+calY);
+  add(rest, rest.length?'Other months':'');
+  if(!list.length) host.innerHTML='<div class="empty">No training days added yet.</div>';
+  host.querySelectorAll('[data-tredit]').forEach(b=>b.addEventListener('click',()=>trLoad(b.dataset.tredit)));
+  host.querySelectorAll('[data-trdel]').forEach(b=>b.addEventListener('click',()=>trRemove(b.dataset.trdel)));
+}
+function trLoad(id){
+  const t=TRAINING.find(x=>x.id===id); if(!t) return;
+  trEditing=id;
+  document.getElementById('trDate').value=t.date;
+  document.getElementById('trTitle').value=t.title||'';
+  document.getElementById('trHours').value=t.hours||'';
+  document.getElementById('trLoc').value=t.location||'';
+  document.getElementById('trHosts').value=t.hosts||'';
+  document.getElementById('trNote').value=t.note||'';
+  document.getElementById('trSave').textContent='Save changes';
+  document.getElementById('trCancel').hidden=false;
+  trErr('');
+}
+function trReset(){
+  trEditing=null;
+  ['trTitle','trHours','trLoc','trHosts','trNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('trDate').value=dInput(new Date(calY,calM,1));
+  document.getElementById('trSave').textContent='Add training day';
+  document.getElementById('trCancel').hidden=true;
+  trErr('');
+}
+function trSave(){
+  const g=id=>document.getElementById(id).value.trim();
+  const date=g('trDate'), title=g('trTitle');
+  trErr('');
+  if(!date){ trErr('Pick a date.'); return; }
+  if(!title){ trErr('Give it a title, for example CNT Training Day.'); return; }
+  const clash=TRAINING.find(t=>t.date===date && t.id!==trEditing);
+  if(clash){ trErr('There is already a training day on that date: '+clash.title+'. Edit or remove it first.'); return; }
+  const wasEdit=!!trEditing;
+  const rec={ id: trEditing || 'tr'+Date.now()+Math.floor(Math.random()*99),
+    date, title, hours:g('trHours'), location:g('trLoc'), hosts:g('trHosts'), note:g('trNote') };
+  if(wasEdit) TRAINING=TRAINING.map(t=>t.id===trEditing?rec:t);
+  else TRAINING.push(rec);
+  trReset(); renderTraining(); renderCal(new Date());
+  syncUp((wasEdit?'Updated ':'Added ')+title+' on '+niceDate(date));
+  trFlash((wasEdit?'Updated ':'Added ')+title+'. It now shows on the calendar.');
+}
+function trRemove(id){
+  const t=TRAINING.find(x=>x.id===id); if(!t) return;
+  if(!confirm('Remove '+(t.title||'this training day')+' on '+niceDate(t.date)+'?')) return;
+  TRAINING=TRAINING.filter(x=>x.id!==id);
+  if(trEditing===id) trReset();
+  renderTraining(); renderCal(new Date());
+  syncUp('Removed '+(t.title||'training day'));
+}
+
 /* ---- admin: change the password ---- */
 function pwErr(msg){
   const el=document.getElementById('pwErr');
@@ -2249,8 +2416,8 @@ document.querySelectorAll('.chip').forEach(b=>{
   });
 });
 document.getElementById('search').addEventListener('input',e=>{query=e.target.value.trim();renderRoster(new Date());});
-document.getElementById('prevMon').addEventListener('click',()=>{calM--;if(calM<0){calM=11;calY--;}renderCal(new Date());});
-document.getElementById('nextMon').addEventListener('click',()=>{calM++;if(calM>11){calM=0;calY++;}renderCal(new Date());});
+document.getElementById('prevMon').addEventListener('click',()=>{calM--;if(calM<0){calM=11;calY--;}renderCal(new Date());renderTraining();});
+document.getElementById('nextMon').addEventListener('click',()=>{calM++;if(calM>11){calM=0;calY++;}renderCal(new Date());renderTraining();});
 function setMoment(ms){ momentT=ms; renderLive(); }
 document.getElementById('mBack').addEventListener('click',()=>setMoment(viewT()-36e5));
 document.getElementById('mFwd').addEventListener('click',()=>setMoment(viewT()+36e5));
@@ -2270,6 +2437,8 @@ document.getElementById('adminToggle').addEventListener('click',()=>{
   const b=document.getElementById('adminBody'), t=document.getElementById('adminToggle');
   const open=b.hidden; b.hidden=!open; t.setAttribute('aria-expanded',open?'true':'false');
 });
+document.getElementById('trSave').addEventListener('click',trSave);
+document.getElementById('trCancel').addEventListener('click',trReset);
 document.getElementById('pwSave').addEventListener('click',changePassword);
 ['pwNew','pwNew2'].forEach(id=>document.getElementById(id)
   .addEventListener('keydown',e=>{ if(e.key==='Enter') changePassword(); }));
@@ -2305,7 +2474,7 @@ document.addEventListener('keydown',e=>{
   else if(!document.getElementById('picker').hidden) closePicker();
   else if(!document.getElementById('editor').hidden) closeEditor();
 });
-document.getElementById('todayBtn').addEventListener('click',()=>{const n=new Date();calY=n.getFullYear();calM=n.getMonth();renderCal(n);});
+document.getElementById('todayBtn').addEventListener('click',()=>{const n=new Date();calY=n.getFullYear();calM=n.getMonth();renderCal(n);renderTraining();});
 
 /* ---- day / night ---- */
 const THEME_KEY='cnt-theme';
@@ -2328,7 +2497,7 @@ document.querySelectorAll('.themesw button').forEach(b=>
 
 const _n=new Date(); calY=_n.getFullYear(); calM=_n.getMonth();
 loadCov(); loadRoster(); covIdx=blockIndex(_n);
-renderAll(); renderEdit(); renderPubBar();
+renderAll(); renderEdit(); renderPubBar(); trReset(); renderTraining();
 if(location.hash.toLowerCase()==='#log') setLogVisible(true);
 setLogVisible(logVisible());
 bootAuth();

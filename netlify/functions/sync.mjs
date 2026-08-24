@@ -7,8 +7,8 @@
  *   GET  /api/auth    is a password set yet?
  *   POST /api/auth    check a password
  *   PUT  /api/auth    set or change the password
- *   GET  /api/sync    roster + coverage        (password required)
- *   PUT  /api/sync    save roster + coverage   (password required)
+ *   GET  /api/sync    roster, coverage, training       (password required)
+ *   PUT  /api/sync    save all three                   (password required)
  *
  * Environment variables, set in Netlify:
  *   GITHUB_TOKEN   token with repository contents read and write
@@ -19,6 +19,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 const ROSTER = 'data/roster.json';
 const COVERAGE = 'data/coverage.json';
+const TRAINING = 'data/training.json';
 const AUTH = 'data/auth.json';
 
 const json = (body, status = 200) =>
@@ -136,12 +137,13 @@ export default async (req) => {
     }
 
     if (req.method === 'GET') {
-      const [r, c] = await Promise.all([readFile(ROSTER), readFile(COVERAGE)]);
+      const [r, c, t] = await Promise.all([readFile(ROSTER), readFile(COVERAGE), readFile(TRAINING)]);
       return json({
         version: (r.data && r.data.version) || 0,
         updated: (r.data && r.data.updated) || null,
         members: (r.data && r.data.members) || null,
-        windows: (c.data && c.data.windows) || []
+        windows: (c.data && c.data.windows) || [],
+        training: (t.data && t.data.events) || []
       });
     }
 
@@ -150,7 +152,7 @@ export default async (req) => {
       if (!body || !Array.isArray(body.members) || !body.members.length) {
         return json({ error: 'bad_payload', message: 'members must be a non-empty array.' }, 400);
       }
-      const [r, c] = await Promise.all([readFile(ROSTER), readFile(COVERAGE)]);
+      const [r, c, t] = await Promise.all([readFile(ROSTER), readFile(COVERAGE), readFile(TRAINING)]);
       const current = (r.data && r.data.version) || 0;
       if (typeof body.baseVersion === 'number' && body.baseVersion !== current) {
         return json({ error: 'conflict', version: current,
@@ -164,7 +166,12 @@ export default async (req) => {
         await writeFile(COVERAGE, { version, updated, windows: body.windows }, c.sha,
           `coverage v${version} via on-call site [skip ci]`);
       }
-      return json({ version, updated, members: body.members, windows: body.windows || [] });
+      if (Array.isArray(body.training)) {
+        await writeFile(TRAINING, { version, updated, events: body.training }, t.sha,
+          `training v${version} via on-call site [skip ci]`);
+      }
+      return json({ version, updated, members: body.members,
+        windows: body.windows || [], training: body.training || [] });
     }
 
     return json({ error: 'method_not_allowed' }, 405);
