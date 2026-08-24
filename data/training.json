@@ -1,6 +1,6 @@
 {
- "version": 16,
- "updated": "2026-08-24T21:48:40.217Z",
+ "version": 17,
+ "updated": "2026-08-24T21:49:17.207Z",
  "events": [
   {
    "id": "tr178759038623464",
@@ -53,8 +53,8 @@
    "title": "CNT/SWAT Joint Training Day - Banquet",
    "hours": "0700-1700",
    "location": "",
-   "hosts": "",
-   "note": ""
+   "hosts": "Ward/Chang",
+   "note": "Joint Day / Equipment and Technical Knowledge"
   }
  ]
 }
