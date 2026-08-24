@@ -403,6 +403,44 @@ button.cal-cell:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 .pubsteps{margin:0 0 12px;padding-left:20px;font-size:13.5px;line-height:1.7}
 .pubsteps li{margin-bottom:4px}
 .pubsteps b{color:var(--text)}
+/* ---------- activity log ---------- */
+.logday{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:18px 0 7px}
+.logday:first-child{margin-top:4px}
+.logrow{display:flex;gap:11px;align-items:baseline;background:var(--panel);border:1px solid var(--line-soft);
+  border-radius:8px;padding:9px 11px;margin-bottom:6px;font-size:13.5px;line-height:1.5}
+.logrow .lt{font-family:var(--mono);font-size:11px;color:var(--dim);flex:0 0 52px}
+.logrow .lb{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted);flex:0 0 auto;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logrow .lx{flex:1;min-width:0}
+.logrow.add{border-left:3px solid var(--blue)}
+.logrow.del{border-left:3px solid var(--red)}
+.logrow.cov{border-left:3px solid var(--amber)}
+/* ---------- login gate ---------- */
+.gate{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.gate[hidden]{display:none}
+.gatebox{width:100%;max-width:330px;text-align:center}
+.gatelogo{width:74px;height:78px;margin:0 auto 18px;display:block}
+.gatetitle{font-family:var(--display);font-weight:700;font-size:34px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.gatesub{font-size:13.5px;color:var(--muted);margin:8px 0 18px;line-height:1.55}
+.gateinput{margin-bottom:9px;text-align:center;font-family:var(--body);font-size:16px}
+.gatebtn{width:100%;padding:11px 16px 10px;font-size:16px}
+.gateerr{background:var(--red-bg);border:1px solid var(--red);color:var(--text);border-radius:8px;
+  padding:9px 11px;font-size:13px;margin-bottom:11px;text-align:left}
+.gateerr[hidden]{display:none}
+.gatenote{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:16px;line-height:1.6}
+
+/* ---------- admin panel ---------- */
+.admin{margin-top:40px;border-top:1px solid var(--line);padding-top:8px}
+.admin[hidden]{display:none}
+.adminhead{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;
+  padding:10px 2px;color:var(--dim);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.adminhead:hover{color:var(--text)}
+.adminhead:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.adminhead .chev{margin-left:auto;transition:transform .15s}
+.adminhead[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.adminbody{background:var(--panel);border:1px solid var(--line-soft);border-radius:10px;padding:14px;margin-bottom:10px}
+.adminbody[hidden]{display:none}
+.adminnote{font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.55}
 footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:12px;font-family:var(--mono);line-height:1.7}
 
 @media (max-width:560px){
@@ -417,6 +455,19 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
 </style>
 </head>
 <body>
+
+<div class="gate" id="gate">
+  <div class="gatebox">
+    <span class="logo gatelogo" role="img" aria-label="Irvine Police Department Crisis Negotiation Team patch"></span>
+    <h1 class="gatetitle">CNT On-Call</h1>
+    <p class="gatesub" id="gateSub">Enter the team password to continue.</p>
+    <div class="gateerr" id="gateErr" hidden></div>
+    <input class="fin gateinput" type="password" id="gatePw" placeholder="Password" autocomplete="current-password" aria-label="Team password">
+    <input class="fin gateinput" type="password" id="gatePw2" placeholder="Type it again" autocomplete="new-password" aria-label="Confirm password" hidden>
+    <button class="btn primary gatebtn" id="gateGo">Enter</button>
+    <p class="gatenote" id="gateNote"></p>
+  </div>
+</div>
 
 <header class="banner" id="banner">
   <div class="wrap">
@@ -446,6 +497,7 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       <button class="tab" role="tab" id="tab-cov" aria-controls="panel-cov" aria-selected="false">On-call coverage</button>
       <button class="tab" role="tab" id="tab-week" aria-controls="panel-week" aria-selected="false">Weekly shifts</button>
       <button class="tab" role="tab" id="tab-edit" aria-controls="panel-edit" aria-selected="false">Edit roster</button>
+      <button class="tab" role="tab" id="tab-log" aria-controls="panel-log" aria-selected="false" hidden>Activity</button>
     </div>
   </div>
 </div>
@@ -569,6 +621,8 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       <p class="sec-note">Update a member when someone joins, leaves, changes phones or changes hours. Changes flow through to every other tab.</p>
       <div class="editbar">
         <button class="btn primary" id="addMember">Add member</button>
+        <input id="actorName" class="search" style="flex:0 1 220px" type="text"
+               placeholder="Your name (for the log)" aria-label="Your name, recorded against changes you make">
       </div>
       <p class="savenote" id="edSaveNote">Every change saves for the whole team straight away. Other phones and computers pick it up within a minute,
       or immediately when they press <b>Refresh</b>.</p>
@@ -639,6 +693,19 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
     </div>
   </div>
 
+  <section role="tabpanel" id="panel-log" aria-labelledby="tab-log" hidden>
+    <div class="sec" style="margin-top:26px">
+      <div class="sec-head"><h2>Activity</h2><span class="count" id="logCount"></span></div>
+      <p class="sec-note">Every change made to the roster and to on-call coverage, newest first.</p>
+      <div class="editbar">
+        <input id="logFilter" class="search" style="flex:1 1 200px" type="search" placeholder="Search the log" aria-label="Search the log">
+        <button class="btn" id="logRefresh">Refresh</button>
+        <button class="btn quiet" id="logHide">Hide this tab</button>
+      </div>
+      <div id="logList"></div>
+    </div>
+  </section>
+
   <div class="overlay" id="daySheet" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
       <header>
@@ -691,6 +758,22 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       </footer>
     </div>
   </div>
+
+  <section class="admin" id="admin" hidden>
+    <button class="adminhead" id="adminToggle" aria-expanded="false" aria-controls="adminBody">
+      <span>Admin</span><span class="chev" aria-hidden="true">&#9662;</span>
+    </button>
+    <div class="adminbody" id="adminBody" hidden>
+      <p class="adminnote">Changes the password everyone uses to open this site. Everyone will be signed out and will need the new one.</p>
+      <div class="formerr" id="pwErr" hidden></div>
+      <div class="formrow">
+        <label>New password<input class="fin" type="password" id="pwNew" autocomplete="new-password"></label>
+        <label>Type it again<input class="fin" type="password" id="pwNew2" autocomplete="new-password"></label>
+      </div>
+      <button class="btn primary" id="pwSave">Change password</button>
+      <div id="pwFlash"></div>
+    </div>
+  </section>
 
   <footer>
     Source: CNT On-Call Rotation sheet, roster tab, updated 06/30/2026.<br>
@@ -1796,6 +1879,9 @@ function stepDay(n){ daySel=new Date(daySel.getTime()+n*864e5); renderDay(); }
    offline and while the first request is in flight. */
 const API='/api/sync';
 let server={state:'checking', version:0, updated:null, why:'', detail:''};
+const PASS_KEY='cnt-pass';
+let pass=''; try{ pass=localStorage.getItem(PASS_KEY)||''; }catch(e){}
+const authHeaders=()=>({'content-type':'application/json','x-cnt-pass':pass});
 let pushTimer=null, polling=null;
 
 /* legacy fallbacks, used only if the function is not deployed yet */
@@ -1851,7 +1937,8 @@ function applyDoc(doc){
 
 /* ---- read ---- */
 async function pullServer(silent){
-  const r=await fetchJSON(API);
+  const r=await fetchJSON(API,{cache:'no-store',headers:authHeaders()});
+  if(r.status===401){ showGate(r.body&&r.body.error==='needs_setup'?'setup':'again'); return false; }
   if(r.ok && r.body && Array.isArray(r.body.members) && r.body.members.length){
     const changed = r.body.version!==server.version;
     server.state='live';
@@ -1875,27 +1962,17 @@ async function pullServer(silent){
   renderPubBar();
   return false;
 }
-/* fallback: the static json files, if the function is not up */
-async function pullFiles(){
-  const r=await fetchJSON(PUB.roster);
-  if(r.ok && r.body && Array.isArray(r.body.members)){
-    pubInfo.roster=r.body;
-    const local=readLocalRoster();
-    if(!(local && local.basis>=r.body.version)){ ROSTER=r.body.members.map(hydrate); renderAll(); renderEdit(); }
-  }
-  const c=await fetchJSON(PUB.coverage);
-  if(c.ok && c.body && Array.isArray(c.body.windows)){
-    pubInfo.coverage=c.body;
-    const local=readLocalCov();
-    if(!(local && local.basis>=c.body.version)){ COV=windowsIn(c.body.windows); renderAll(); renderEdit(); }
-  }
-}
+/* The raw data files are blocked from public access on purpose, so there is no
+   file fallback. If the server cannot be reached the app keeps showing the last
+   copy this device loaded, held in local storage. */
+async function pullFiles(){ /* intentionally empty */ }
 
 /* ---- write ---- */
 async function pushServer(){
   const r=await fetchJSON(API,{method:'PUT',cache:'no-store',
-    headers:{'content-type':'application/json'},
-    body:JSON.stringify({baseVersion:server.version, members:membersOut(), windows:windowsOut()})});
+    headers:authHeaders(),
+    body:JSON.stringify({baseVersion:server.version, members:membersOut(), windows:windowsOut(), by:actor})});
+  if(r.status===401){ showGate('again'); return {ok:false,reason:'auth'}; }
   if(r.ok && r.body){
     server.state='live';
     server.version=r.body.version; server.updated=r.body.updated;
@@ -1919,7 +1996,7 @@ function syncUp(label){
   clearTimeout(pushTimer);
   pushTimer=setTimeout(async()=>{
     const res=await pushServer();
-    if(res.ok) flash(label,true,' \u2014 saved for everyone.');
+    if(res.ok){ flash(label,true,' \u2014 saved for everyone.'); if(logVisible()) loadLog(); }
     else if(res.reason==='conflict') flash(label,false,' \u2014 not saved: someone else saved first. Press Refresh, then make the change again.');
     else if(res.reason==='not_configured') flash(label,false,' \u2014 not saved: sharing is not switched on for this site yet.');
     else flash(label,false,' \u2014 not saved to the team: could not reach the server. It is stored on this device only.');
@@ -1986,6 +2063,143 @@ function renderPubBar(){
   });
 }
 
+/* ================= activity log ================= */
+const ACTOR_KEY='cnt-actor', LOG_KEY='cnt-show-log';
+let actor=''; try{ actor=localStorage.getItem(ACTOR_KEY)||''; }catch(e){}
+let logEntries=null, logQuery='';
+
+function logVisible(){ try{ return localStorage.getItem(LOG_KEY)==='1'; }catch(e){ return false; } }
+function setLogVisible(on){
+  try{ on ? localStorage.setItem(LOG_KEY,'1') : localStorage.removeItem(LOG_KEY); }catch(e){}
+  const t=document.getElementById('tab-log'); if(t) t.hidden=!on;
+}
+
+async function loadLog(){
+  const host=document.getElementById('logList');
+  if(host && logEntries===null) host.innerHTML='<div class="empty">Loading\u2026</div>';
+  const r=await fetchJSON(API+'?log=1');
+  logEntries = (r.ok && r.body && Array.isArray(r.body.entries)) ? r.body.entries : [];
+  renderLog();
+}
+function renderLog(){
+  const host=document.getElementById('logList'); if(!host) return;
+  const q=logQuery.toLowerCase();
+  const rows=(logEntries||[]).filter(e=>!q||((e.text+' '+e.by).toLowerCase().includes(q)));
+  document.getElementById('logCount').textContent=
+    (logEntries===null?'':rows.length+(q?' matching':'')+' entr'+(rows.length===1?'y':'ies'));
+  if(logEntries===null) return;
+  if(!rows.length){
+    host.innerHTML='<div class="empty">'+(q?'Nothing matches that search.'
+      :'No changes recorded yet. Edits made from now on will appear here.')+'</div>';
+    return;
+  }
+  host.innerHTML='';
+  let day='';
+  rows.forEach(e=>{
+    const d=new Date(e.at);
+    const dl=isNaN(d)?'':d.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+    if(dl!==day){ day=dl;
+      const h=document.createElement('p'); h.className='logday'; h.textContent=dl; host.appendChild(h); }
+    const kind = /^Coverage/.test(e.text) ? 'cov'
+               : /^Added/.test(e.text) ? 'add'
+               : /^Removed/.test(e.text) ? 'del' : '';
+    const row=document.createElement('div');
+    row.className='logrow '+kind;
+    row.innerHTML='<span class="lt">'+(isNaN(d)?'':pad2(d.getHours())+pad2(d.getMinutes()))+'</span>'+
+      '<span class="lb">'+(e.by||'Someone')+'</span>'+
+      '<span class="lx">'+String(e.text).replace(/</g,'&lt;')+'</span>';
+    host.appendChild(row);
+  });
+}
+
+/* ================= password gate ================= */
+let gateMode='login';
+
+function showGate(mode){
+  gateMode = mode==='setup' ? 'setup' : 'login';
+  document.getElementById('gatePw2').hidden = gateMode!=='setup';
+  document.getElementById('gateSub').textContent = gateMode==='setup'
+    ? 'No password has been set for this site yet. Choose one for the team.'
+    : 'Enter the team password to continue.';
+  document.getElementById('gateGo').textContent = gateMode==='setup' ? 'Set password' : 'Enter';
+  document.getElementById('gateNote').textContent = gateMode==='setup'
+    ? 'Everyone on the team will use this password.' : '';
+  gateErr(mode==='again' ? 'That password is not correct.' : '');
+  document.getElementById('gate').hidden=false;
+  document.getElementById('admin').hidden=true;
+  setTimeout(()=>document.getElementById('gatePw').focus(),50);
+}
+function hideGate(){
+  document.getElementById('gate').hidden=true;
+  document.getElementById('admin').hidden=false;
+  document.getElementById('gatePw').value='';
+  document.getElementById('gatePw2').value='';
+  gateErr('');
+}
+function gateErr(msg){
+  const el=document.getElementById('gateErr');
+  el.textContent=msg||''; el.hidden=!msg;
+}
+function rememberPass(p){ pass=p; try{ localStorage.setItem(PASS_KEY,p); }catch(e){} }
+
+async function gateSubmit(){
+  const btn=document.getElementById('gateGo');
+  const p1=document.getElementById('gatePw').value;
+  if(!p1){ gateErr('Enter the password.'); return; }
+  btn.disabled=true;
+  try{
+    if(gateMode==='setup'){
+      const p2=document.getElementById('gatePw2').value;
+      if(p1!==p2){ gateErr('The two passwords do not match.'); return; }
+      if(p1.length<4){ gateErr('Use at least 4 characters.'); return; }
+      const r=await fetchJSON('/api/auth',{method:'PUT',
+        headers:{'content-type':'application/json'}, body:JSON.stringify({newPassword:p1})});
+      if(!r.ok){ gateErr((r.body&&r.body.message)||'Could not set the password.'); return; }
+      rememberPass(p1); hideGate(); await startSync(); return;
+    }
+    const r=await fetchJSON('/api/auth',{method:'POST',
+      headers:{'content-type':'application/json'}, body:JSON.stringify({password:p1})});
+    if(r.status===409){ showGate('setup'); return; }
+    if(!r.ok){ gateErr((r.body&&r.body.message)||'That password is not correct.'); return; }
+    rememberPass(p1); hideGate(); await startSync();
+  }catch(e){ gateErr('Could not reach the site. Check your connection and try again.'); }
+  finally{ btn.disabled=false; }
+}
+
+/* ---- admin: change the password ---- */
+function pwErr(msg){
+  const el=document.getElementById('pwErr');
+  el.textContent=msg||''; el.hidden=!msg;
+}
+async function changePassword(){
+  const a=document.getElementById('pwNew').value, b=document.getElementById('pwNew2').value;
+  pwErr('');
+  if(!a){ pwErr('Enter a new password.'); return; }
+  if(a!==b){ pwErr('The two passwords do not match.'); return; }
+  if(a.length<4){ pwErr('Use at least 4 characters.'); return; }
+  if(!confirm('Are you sure you are changing the password?\n\nIf so, please email and notify everyone at PS_CNT.\n\nEveryone will be signed out until they have the new password.')) return;
+  const btn=document.getElementById('pwSave'); btn.disabled=true;
+  try{
+    const r=await fetchJSON('/api/auth',{method:'PUT', headers:authHeaders(),
+      body:JSON.stringify({newPassword:a})});
+    if(!r.ok){ pwErr((r.body&&r.body.message)||'Could not change the password.'); return; }
+    rememberPass(a);
+    document.getElementById('pwNew').value=''; document.getElementById('pwNew2').value='';
+    document.getElementById('pwFlash').innerHTML=
+      '<div class="flashbar">Password changed. Remember to email PS_CNT so everyone has the new one.</div>';
+    setTimeout(()=>{document.getElementById('pwFlash').innerHTML='';},9000);
+  }catch(e){ pwErr('Could not reach the site. Try again.'); }
+  finally{ btn.disabled=false; }
+}
+
+async function bootAuth(){
+  const r=await fetchJSON('/api/auth',{cache:'no-store'});
+  if(r.ok && r.body && r.body.status==='needs_setup'){ showGate('setup'); return; }
+  if(!pass){ showGate('login'); return; }
+  hideGate();
+  await startSync();
+}
+
 /* ================= wiring ================= */
 function renderAll(){
   const now=new Date();
@@ -1999,6 +2213,7 @@ document.querySelectorAll('.tab').forEach(t=>{
       x.setAttribute('aria-selected',sel?'true':'false');
       document.getElementById(x.getAttribute('aria-controls')).hidden=!sel;
     });
+    if(t.id==='tab-log') loadLog();
     window.scrollTo({top:0,behavior:'instant'});
   });
 });
@@ -2024,7 +2239,28 @@ document.getElementById('covPrev').addEventListener('click',()=>{covIdx--;render
 document.getElementById('covNext').addEventListener('click',()=>{covIdx++;renderCoverage(new Date());});
 document.getElementById('covNow').addEventListener('click',()=>{covIdx=blockIndex(new Date());renderCoverage(new Date());});
 document.getElementById('covReset').addEventListener('click',resetCov);
+document.getElementById('gateGo').addEventListener('click',gateSubmit);
+['gatePw','gatePw2'].forEach(id=>document.getElementById(id)
+  .addEventListener('keydown',e=>{ if(e.key==='Enter') gateSubmit(); }));
+document.getElementById('adminToggle').addEventListener('click',()=>{
+  const b=document.getElementById('adminBody'), t=document.getElementById('adminToggle');
+  const open=b.hidden; b.hidden=!open; t.setAttribute('aria-expanded',open?'true':'false');
+});
+document.getElementById('pwSave').addEventListener('click',changePassword);
+['pwNew','pwNew2'].forEach(id=>document.getElementById(id)
+  .addEventListener('keydown',e=>{ if(e.key==='Enter') changePassword(); }));
 document.getElementById('addMember').addEventListener('click',()=>openEditor(null));
+const actorEl=document.getElementById('actorName');
+actorEl.value=actor;
+actorEl.addEventListener('input',()=>{ actor=actorEl.value.trim();
+  try{ actor?localStorage.setItem(ACTOR_KEY,actor):localStorage.removeItem(ACTOR_KEY); }catch(e){} });
+document.getElementById('logRefresh').addEventListener('click',loadLog);
+document.getElementById('logFilter').addEventListener('input',e=>{ logQuery=e.target.value.trim(); renderLog(); });
+document.getElementById('logHide').addEventListener('click',()=>{
+  if(!confirm('Hide the Activity tab on this device? Add #log to the web address to bring it back.')) return;
+  setLogVisible(false);
+  document.getElementById('tab-roster').click();
+});
 document.getElementById('edCancel').addEventListener('click',closeEditor);
 document.getElementById('edSave').addEventListener('click',saveMember);
 document.getElementById('edDelete').addEventListener('click',deleteMember);
@@ -2069,7 +2305,9 @@ document.querySelectorAll('.themesw button').forEach(b=>
 const _n=new Date(); calY=_n.getFullYear(); calM=_n.getMonth();
 loadCov(); loadRoster(); covIdx=blockIndex(_n);
 renderAll(); renderEdit(); renderPubBar();
-startSync();
+if(location.hash.toLowerCase()==='#log') setLogVisible(true);
+setLogVisible(logVisible());
+bootAuth();
 setInterval(()=>{const n=new Date();renderBanner(n);renderRoster(n);if(momentT===null)renderLive();renderBand(n);},30000);
 </script>
 </body>

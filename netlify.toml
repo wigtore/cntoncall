@@ -31,8 +31,10 @@
   [headers.values]
     Cache-Control = "no-store"
 
-[[headers]]
-  for = "/data/*"
-  [headers.values]
-    Cache-Control = "no-cache, must-revalidate"
-    Content-Type = "application/json; charset=utf-8"
+# The roster holds personal phone numbers. It is reachable only through
+# /api/sync, which checks the team password. Block the raw files.
+[[redirects]]
+  from = "/data/*"
+  to = "/index.html"
+  status = 404
+  force = true
