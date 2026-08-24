@@ -1,6 +1,6 @@
 {
- "version": 11,
- "updated": "2026-08-24T20:25:15.876Z",
+ "version": 12,
+ "updated": "2026-08-24T20:25:22.878Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -297,7 +297,7 @@
    ],
    "carrier": "AT&T",
    "note": "IOD - Est. return December 2026",
-   "mode": "leave",
+   "mode": "oncall",
    "daysLabel": ""
   },
   {
