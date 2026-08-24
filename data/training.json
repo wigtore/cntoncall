@@ -1,6 +1,6 @@
 {
- "version": 15,
- "updated": "2026-08-24T21:48:12.218Z",
+ "version": 16,
+ "updated": "2026-08-24T21:48:40.217Z",
  "events": [
   {
    "id": "tr178759038623464",
@@ -44,8 +44,8 @@
    "title": "CNT Training Day",
    "hours": "0700-1700",
    "location": "TBD",
-   "hosts": "",
-   "note": ""
+   "hosts": "Guzman/Seiders",
+   "note": "Media Influences and Effects"
   },
   {
    "id": "tr178759056424576",
