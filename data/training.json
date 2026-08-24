@@ -1,6 +1,6 @@
 {
- "version": 14,
- "updated": "2026-08-24T21:44:24.197Z",
+ "version": 15,
+ "updated": "2026-08-24T21:48:12.218Z",
  "events": [
   {
    "id": "tr178759038623464",
@@ -35,8 +35,8 @@
    "title": "CNT Training Day",
    "hours": "0700-1700",
    "location": "TBD",
-   "hosts": "",
-   "note": ""
+   "hosts": "Evans/Wackerman",
+   "note": "Juvenile Issues"
   },
   {
    "id": "tr17875905209742",
