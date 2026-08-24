@@ -1,6 +1,6 @@
 {
- "version": 6,
- "updated": "2026-08-24T16:55:22.473Z",
+ "version": 7,
+ "updated": "2026-08-24T16:56:05.999Z",
  "events": [
   {
    "id": "tr178759038623464",
@@ -44,6 +44,15 @@
    "title": "CNT Training Day",
    "hours": "0700-1700",
    "location": "TBD",
+   "hosts": "",
+   "note": ""
+  },
+  {
+   "id": "tr178759056424576",
+   "date": "2027-01-21",
+   "title": "CNT/SWAT Joint Training Day - Banquet",
+   "hours": "0700-1700",
+   "location": "",
    "hosts": "",
    "note": ""
   }
