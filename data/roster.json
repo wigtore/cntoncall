@@ -1,6 +1,6 @@
 {
- "version": 25,
- "updated": "2026-08-25T19:06:16.066Z",
+ "version": 26,
+ "updated": "2026-08-25T19:28:07.809Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -296,8 +296,10 @@
    ],
    "carrier": "AT&T",
    "note": "IOD - Est. return December 2026",
-   "mode": "leave",
-   "daysLabel": ""
+   "mode": "sched",
+   "daysLabel": "FRI-SUN",
+   "start": 1300,
+   "end": 130
   },
   {
    "name": "E. Brennan",
