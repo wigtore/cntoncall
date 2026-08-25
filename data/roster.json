@@ -1,6 +1,6 @@
 {
- "version": 19,
- "updated": "2026-08-25T18:51:30.713Z",
+ "version": 20,
+ "updated": "2026-08-25T18:52:43.683Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -133,22 +133,23 @@
    "end": 2300
   },
   {
-   "name": "J. Yue",
    "cs": "N13",
+   "name": "X. Guzman",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "949-375-6711"
+     "909-282-6536"
     ]
    ],
    "carrier": "VZ",
+   "note": "",
    "mode": "sched",
-   "daysLabel": "MON-THURS",
-   "start": 1300,
-   "end": 2300
+   "daysLabel": "TUES-FRI",
+   "start": 600,
+   "end": 1600
   },
   {
    "name": "Sgt. R. Newton",
