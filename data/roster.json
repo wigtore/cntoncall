@@ -1,6 +1,6 @@
 {
- "version": 27,
- "updated": "2026-08-25T20:53:24.609Z",
+ "version": 28,
+ "updated": "2026-08-25T20:53:52.852Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -142,6 +142,10 @@
     [
      "Cell",
      "909-282-6536"
+    ],
+    [
+     "Wk cell",
+     "949-529-8489"
     ]
    ],
    "carrier": "T-Mobile",
