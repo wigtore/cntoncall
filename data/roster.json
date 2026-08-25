@@ -1,6 +1,6 @@
 {
- "version": 20,
- "updated": "2026-08-25T18:52:43.683Z",
+ "version": 21,
+ "updated": "2026-08-25T18:52:57.353Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -144,7 +144,7 @@
      "909-282-6536"
     ]
    ],
-   "carrier": "VZ",
+   "carrier": "T-Mobile",
    "note": "",
    "mode": "sched",
    "daysLabel": "TUES-FRI",
