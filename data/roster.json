@@ -1,6 +1,6 @@
 {
- "version": 23,
- "updated": "2026-08-25T18:56:06.612Z",
+ "version": 24,
+ "updated": "2026-08-25T19:06:03.530Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -280,7 +280,7 @@
   },
   {
    "cs": "N8",
-   "name": "K. Wiebe",
+   "name": "K. Wiebe **Currently Unavailable**",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
