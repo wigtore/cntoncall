@@ -1,6 +1,6 @@
 {
- "version": 18,
- "updated": "2026-08-25T18:50:10.012Z",
+ "version": 19,
+ "updated": "2026-08-25T18:51:30.713Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -114,22 +114,23 @@
    "end": 1600
   },
   {
-   "name": "M. Ward",
    "cs": "N11",
+   "name": "J. Yue",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "562-665-2086"
+     "949-375-6711"
     ]
    ],
-   "carrier": "",
+   "carrier": "VZ",
+   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
-   "start": 600,
-   "end": 1600
+   "start": 1300,
+   "end": 2300
   },
   {
    "name": "J. Yue",
