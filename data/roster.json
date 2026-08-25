@@ -1,6 +1,6 @@
 {
- "version": 17,
- "updated": "2026-08-24T21:49:17.207Z",
+ "version": 18,
+ "updated": "2026-08-25T18:50:10.012Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -95,22 +95,19 @@
    "end": 1600
   },
   {
-   "name": "J. Rauh",
    "cs": "N9",
+   "name": "M. Ward",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "949-680-9024"
-    ],
-    [
-     "Wk cell",
-     "949-351-1426"
+     "562-665-2086"
     ]
    ],
-   "carrier": "AT&T",
+   "carrier": "",
+   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 600,
