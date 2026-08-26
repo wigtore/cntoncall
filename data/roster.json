@@ -1,6 +1,6 @@
 {
- "version": 110,
- "updated": "2026-08-26T14:36:58.160Z",
+ "version": 111,
+ "updated": "2026-08-26T14:37:20.759Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -159,8 +159,8 @@
    "end": 1700
   },
   {
+   "cs": "N17",
    "name": "J. Evans",
-   "cs": "N19",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -175,6 +175,7 @@
     ]
    ],
    "carrier": "VZ",
+   "note": "",
    "mode": "sched",
    "daysLabel": "WED-FRI",
    "start": 1800,
