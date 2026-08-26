@@ -1,6 +1,6 @@
 {
- "version": 30,
- "updated": "2026-08-25T20:54:59.149Z",
+ "version": 31,
+ "updated": "2026-08-26T02:09:28.693Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -197,8 +197,8 @@
    "end": 200
   },
   {
-   "name": "T. Hobbs",
    "cs": "TS",
+   "name": "T. Hobbs",
    "team": "blue",
    "sub": "tech",
    "role": "Tech Services",
@@ -206,13 +206,10 @@
     [
      "Cell",
      "949-887-6527"
-    ],
-    [
-     "Home",
-     "949-830-8131"
     ]
    ],
    "carrier": "VZ",
+   "note": "",
    "mode": "oncall",
    "daysLabel": ""
   },
