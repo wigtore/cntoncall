@@ -1,6 +1,6 @@
 {
- "version": 109,
- "updated": "2026-08-26T14:36:39.955Z",
+ "version": 110,
+ "updated": "2026-08-26T14:36:58.160Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -405,7 +405,7 @@
    "name": "D. Reinhold",
    "team": "red",
    "sub": "tech",
-   "role": "Tech Reserve",
+   "role": "Technical Reserve",
    "phones": [
     [
      "Cell",
