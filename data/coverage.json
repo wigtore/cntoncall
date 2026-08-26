@@ -1,6 +1,6 @@
 {
- "version": 121,
- "updated": "2026-08-26T17:53:40.597Z",
+ "version": 122,
+ "updated": "2026-08-26T18:34:51.609Z",
  "windows": [
   {
    "covered": "N9",
@@ -197,6 +197,13 @@
    "start": "2026-09-06T00:00",
    "end": "2026-09-11T00:00",
    "note": ""
+  },
+  {
+   "covered": "TOC2",
+   "by": "TOC1",
+   "start": "2026-09-09T07:00",
+   "end": "2026-09-17T07:00",
+   "note": "vacation"
   },
   {
    "covered": "N11",
