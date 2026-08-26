@@ -1,6 +1,6 @@
 {
- "version": 32,
- "updated": "2026-08-26T02:10:46.208Z",
+ "version": 101,
+ "updated": "2026-08-25",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -47,8 +47,8 @@
    "carrier": "",
    "mode": "sched",
    "daysLabel": "TUES-FRI",
-   "start": 600,
-   "end": 1600
+   "start": 800,
+   "end": 1800
   },
   {
    "name": "J. Aguirre",
@@ -73,30 +73,8 @@
    "end": 1600
   },
   {
-   "name": "B. Noelle",
-   "cs": "N7",
-   "team": "blue",
-   "sub": "neg",
-   "role": "Negotiator",
-   "phones": [
-    [
-     "Cell",
-     "805-298-0827"
-    ],
-    [
-     "Wk cell",
-     "949-439-4876"
-    ]
-   ],
-   "carrier": "AT&T",
-   "mode": "sched",
-   "daysLabel": "MON-THURS",
-   "start": 600,
-   "end": 1600
-  },
-  {
-   "cs": "N9",
    "name": "M. Ward",
+   "cs": "N7",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -107,15 +85,14 @@
     ]
    ],
    "carrier": "",
-   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 600,
    "end": 1600
   },
   {
-   "cs": "N11",
    "name": "J. Yue",
+   "cs": "N9",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -126,15 +103,14 @@
     ]
    ],
    "carrier": "VZ",
-   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 1300,
    "end": 2300
   },
   {
-   "cs": "N13",
    "name": "X. Guzman",
+   "cs": "N11",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -142,18 +118,26 @@
     [
      "Cell",
      "909-282-6536"
-    ],
-    [
-     "Wk cell",
-     "949-529-8489"
     ]
    ],
    "carrier": "T-Mobile",
-   "note": "",
    "mode": "sched",
    "daysLabel": "TUES-FRI",
    "start": 600,
    "end": 1600
+  },
+  {
+   "name": "Vacant",
+   "cs": "N13",
+   "team": "blue",
+   "sub": "neg",
+   "role": "Negotiator — position open",
+   "phones": [],
+   "carrier": "",
+   "note": "This seat is currently unfilled",
+   "vacant": true,
+   "mode": "leave",
+   "daysLabel": ""
   },
   {
    "name": "Sgt. R. Newton",
@@ -168,7 +152,7 @@
     ]
    ],
    "carrier": "T-Mobile",
-   "note": "IOD — see coverage sheet",
+   "note": "Light duty until October",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 700,
@@ -192,13 +176,13 @@
    ],
    "carrier": "VZ",
    "mode": "sched",
-   "daysLabel": "TUES-THURS",
-   "start": 1330,
-   "end": 200
+   "daysLabel": "WED-FRI",
+   "start": 1800,
+   "end": 630
   },
   {
-   "cs": "TS",
    "name": "T. Hobbs",
+   "cs": "TS",
    "team": "blue",
    "sub": "tech",
    "role": "Tech Services",
@@ -206,10 +190,13 @@
     [
      "Cell",
      "949-887-6527"
+    ],
+    [
+     "Home",
+     "949-830-8131"
     ]
    ],
    "carrier": "VZ",
-   "note": "Call Sign 39-785",
    "mode": "oncall",
    "daysLabel": ""
   },
@@ -280,8 +267,8 @@
    "end": 1600
   },
   {
+   "name": "K. Wiebe",
    "cs": "N8",
-   "name": "K. Wiebe **Currently Unavailable**",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -296,11 +283,11 @@
     ]
    ],
    "carrier": "AT&T",
-   "note": "IOD - Est. return December 2026",
+   "note": "IOD until end of September",
    "mode": "sched",
    "daysLabel": "FRI-SUN",
    "start": 1300,
-   "end": 130
+   "end": 2300
   },
   {
    "name": "E. Brennan",
@@ -312,6 +299,10 @@
     [
      "Cell",
      "949-338-7085"
+    ],
+    [
+     "Wk cell",
+     "949-338-7085"
     ]
    ],
    "carrier": "",
@@ -321,8 +312,8 @@
    "end": 1830
   },
   {
+   "name": "P. Wilks",
    "cs": "N12",
-   "name": "P. WILKS",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -337,30 +328,28 @@
     ]
    ],
    "carrier": "",
-   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 1300,
    "end": 2300
   },
   {
-   "cs": "N14",
    "name": "K. Carrillo",
+   "cs": "N14",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "909-544-6820"
+     "909-544-3820"
     ],
     [
      "Wk cell",
      "949-413-4577"
     ]
    ],
-   "carrier": "",
-   "note": "",
+   "carrier": "VZ",
    "mode": "sched",
    "daysLabel": "FRI-SUN",
    "start": 1830,
@@ -384,9 +373,9 @@
    ],
    "carrier": "AT&T",
    "mode": "sched",
-   "daysLabel": "FRI-SUN",
-   "start": 600,
-   "end": 1830
+   "daysLabel": "SAT-MON",
+   "start": 1330,
+   "end": 200
   },
   {
    "name": "T. Wackerman",
@@ -463,7 +452,6 @@
     ]
    ],
    "carrier": "AT&T",
-   "note": "Waterfall",
    "mode": "waterfall",
    "daysLabel": "THURS-SAT"
   },
@@ -528,9 +516,10 @@
     ]
    ],
    "carrier": "VZ",
-   "note": "Maternity leave",
-   "mode": "leave",
-   "daysLabel": ""
+   "mode": "sched",
+   "daysLabel": "THURS-SAT",
+   "start": 1100,
+   "end": 2330
   },
   {
    "name": "L. Marangi",
@@ -586,7 +575,7 @@
    ],
    "carrier": "AT&T",
    "mode": "sched",
-   "daysLabel": "THURS-SAT",
+   "daysLabel": "SUN-TUES",
    "start": 600,
    "end": 1830
   },
