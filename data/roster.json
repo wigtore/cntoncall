@@ -1,6 +1,6 @@
 {
- "version": 105,
- "updated": "2026-08-26T13:42:26.948Z",
+ "version": 106,
+ "updated": "2026-08-26T14:35:08.714Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -598,8 +598,8 @@
    "end": 1800
   },
   {
-   "cs": "TR1",
-   "name": "Bill Kirsanoff",
+   "cs": "TR3",
+   "name": "B. Kirsanoff",
    "team": "shared",
    "sub": "tech",
    "role": "Technical Reserve",
