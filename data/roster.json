@@ -1,6 +1,6 @@
 {
- "version": 119,
- "updated": "2026-08-26T17:47:54.956Z",
+ "version": 120,
+ "updated": "2026-08-26T17:51:32.603Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -127,16 +127,20 @@
    "end": 1600
   },
   {
-   "name": "Vacant",
    "cs": "N13",
+   "name": "**Vacant**",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator — position open",
-   "phones": [],
+   "phones": [
+    [
+     "Cell",
+     "000-000-0000"
+    ]
+   ],
    "carrier": "",
    "note": "This seat is currently unfilled",
-   "vacant": true,
-   "mode": "leave",
+   "mode": "oncall",
    "daysLabel": ""
   },
   {
