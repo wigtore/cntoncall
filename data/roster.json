@@ -1,6 +1,6 @@
 {
- "version": 120,
- "updated": "2026-08-26T17:51:32.603Z",
+ "version": 121,
+ "updated": "2026-08-26T17:53:40.597Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -289,7 +289,7 @@
     ]
    ],
    "carrier": "AT&T",
-   "note": "IOD until end of September",
+   "note": "IOD until end of December",
    "mode": "sched",
    "daysLabel": "FRI-SUN",
    "start": 1300,
