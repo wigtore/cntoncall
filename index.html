@@ -139,6 +139,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15
 .card.dispatch{border-left-color:var(--amber)} .card.shared{border-left-color:var(--shared)}
 .card.live{background:var(--panel-2);border-color:var(--dim)}
 .card.off{opacity:.7}
+.card.vacant{background:transparent;border-style:dashed;border-color:var(--line);opacity:.9}
+.card.vacant .name{color:var(--dim)}
+.card.vacant .sign{background:transparent;border:1px dashed var(--line);color:var(--dim)}
 .card-top{display:flex;align-items:flex-start;gap:9px}
 .sign{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 7px;border-radius:5px;flex:0 0 auto;background:var(--blue-bg);color:var(--blue)}
 .card.red .sign{background:var(--red-bg);color:var(--red)}
@@ -599,7 +602,6 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
         <button class="navbtn" id="covNext" aria-label="Next block">&#8250;</button>
         <span class="mon" id="covLabel" style="min-width:0;flex:1"></span>
         <button class="todaybtn" id="covNow">Current block</button>
-        <button class="todaybtn" id="covReset">Reset to sheet</button>
       </div>
       <p class="sec-note" id="covSub"></p>
 
@@ -830,7 +832,7 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
   </section>
 
   <footer>
-    Source: CNT On-Call Rotation sheet, roster tab, updated 06/30/2026.<br>
+    Source: CNT On-Call Rotation sheet, roster tab, updated 08/25/2026.<br>
     Rotation anchored to 07/23/2026 0700, alternating every 14 days.<br>
     Contains personal phone numbers &mdash; keep behind team sign-in.
   </footer>
@@ -861,8 +863,8 @@ function daysFrom(str){
   for(let i=0;i<7;i++){out.push(d);if(d===b)break;d=(d+1)%7;}
   return out;
 }
-const P=(name,cs,team,sub,role,phones,shift,carrier,note)=>({
-  name,cs,team,sub,role,phones,carrier,note,
+const P=(name,cs,team,sub,role,phones,shift,carrier,note,vacant)=>({
+  name,cs,team,sub,role,phones,carrier,note,vacant,
   mode:shift.mode, days:shift.days?daysFrom(shift.days):[],
   daysLabel:shift.days||'', start:shift.start, end:shift.end
 });
@@ -870,39 +872,39 @@ const P=(name,cs,team,sub,role,phones,shift,carrier,note)=>({
 const DEFAULT_ROSTER=[
   /* BLUE */
   P('Sgt. D. Lipscomb','N1','blue','lead','Team Leader',[['Cell','949-683-4428'],['Wk cell','949-491-5485']],{mode:'sched',days:'MON-THURS',start:600,end:1600},'AT&T'),
-  P('L. Flores','N3','blue','lead','Assistant Team Leader',[['Cell','760-831-5513'],['Cell 2','949-697-3230'],['Wk cell','949-202-6058']],{mode:'sched',days:'TUES-FRI',start:600,end:1600},''),
+  P('L. Flores','N3','blue','lead','Assistant Team Leader',[['Cell','760-831-5513'],['Cell 2','949-697-3230'],['Wk cell','949-202-6058']],{mode:'sched',days:'TUES-FRI',start:800,end:1800},''),
   P('J. Aguirre','N5','blue','neg','Negotiator',[['Cell','626-327-4796'],['Wk cell','949-529-4063']],{mode:'sched',days:'MON-THURS',start:600,end:1600},'AT&T'),
-  P('B. Noelle','N7','blue','neg','Negotiator',[['Cell','805-298-0827'],['Wk cell','949-439-4876']],{mode:'sched',days:'MON-THURS',start:600,end:1600},'AT&T'),
-  P('J. Rauh','N9','blue','neg','Negotiator',[['Cell','949-680-9024'],['Wk cell','949-351-1426']],{mode:'sched',days:'MON-THURS',start:600,end:1600},'AT&T'),
-  P('M. Ward','N11','blue','neg','Negotiator',[['Cell','562-665-2086']],{mode:'sched',days:'MON-THURS',start:600,end:1600},''),
-  P('J. Yue','N13','blue','neg','Negotiator',[['Cell','949-375-6711']],{mode:'sched',days:'MON-THURS',start:1300,end:2300},'VZ'),
-  P('Sgt. R. Newton','N15','blue','neg','Negotiator',[['Cell','949-412-4413']],{mode:'sched',days:'MON-THURS',start:700,end:1700},'T-Mobile','IOD — see coverage sheet'),
-  P('J. Evans','N19','blue','neg','Negotiator',[['Cell','714-272-5545'],['Wk cell','949-604-7285']],{mode:'sched',days:'TUES-THURS',start:1330,end:200},'VZ'),
+  P('M. Ward','N7','blue','neg','Negotiator',[['Cell','562-665-2086']],{mode:'sched',days:'MON-THURS',start:600,end:1600},''),
+  P('J. Yue','N9','blue','neg','Negotiator',[['Cell','949-375-6711']],{mode:'sched',days:'MON-THURS',start:1300,end:2300},'VZ'),
+  P('X. Guzman','N11','blue','neg','Negotiator',[['Cell','909-282-6536']],{mode:'sched',days:'TUES-FRI',start:600,end:1600},'T-Mobile'),
+  P('Vacant','N13','blue','neg','Negotiator \u2014 position open',[],{mode:'leave'},'','This seat is currently unfilled',true),
+  P('Sgt. R. Newton','N15','blue','neg','Negotiator',[['Cell','949-412-4413']],{mode:'sched',days:'MON-THURS',start:700,end:1700},'T-Mobile','Light duty until October'),
+  P('J. Evans','N19','blue','neg','Negotiator',[['Cell','714-272-5545'],['Wk cell','949-604-7285']],{mode:'sched',days:'WED-FRI',start:1800,end:630},'VZ'),
   P('T. Hobbs','TS','blue','tech','Tech Services',[['Cell','949-887-6527'],['Home','949-830-8131']],{mode:'oncall'},'VZ'),
 
   /* RED */
   P('Sgt. A. Batstone','N2','red','lead','Team Leader',[['Cell','714-600-0874'],['Wk cell','949-491-3037']],{mode:'sched',days:'MON-THURS',start:600,end:1600},'AT&T'),
   P('V. Chang','N4','red','lead','Assistant Team Leader',[['Cell','310-562-3704'],['Wk cell','949-562-3134']],{mode:'sched',days:'MON-THURS',start:600,end:1600},'VZ'),
   P('J. Seiders','N6','red','neg','Negotiator',[['Cell','949-981-9495'],['Wk cell','949-529-4548']],{mode:'sched',days:'MON-THURS',start:600,end:1600},''),
-  P('K. Wiebe','N8','red','neg','Negotiator',[['Cell','949-466-9999'],['Wk cell','949-508-6257']],{mode:'sched',days:'FRI-SUN',start:1300,end:2300},'AT&T','Maternity — see coverage sheet'),
-  P('E. Brennan','N10','red','neg','Negotiator',[['Cell','949-338-7085']],{mode:'sched',days:'FRI-SUN',start:600,end:1830},''),
-  P('R. Nigg','N12','red','neg','Negotiator',[['Cell','951-541-8589']],{mode:'sched',days:'FRI-SUN',start:1830,end:700},''),
-  P('P. Wilks','N14','red','neg','Negotiator',[['Cell','951-858-4965'],['Wk cell','949-656-5234']],{mode:'sched',days:'MON-THURS',start:1300,end:2300},'','Paternity — see coverage sheet'),
-  P('L. Thrap','N16','red','neg','Negotiator',[['Cell','714-345-7351'],['Wk cell','949-604-7587']],{mode:'sched',days:'FRI-SUN',start:600,end:1830},'AT&T'),
+  P('K. Wiebe','N8','red','neg','Negotiator',[['Cell','949-466-9999'],['Wk cell','949-508-6257']],{mode:'sched',days:'FRI-SUN',start:1300,end:2300},'AT&T','IOD until end of September'),
+  P('E. Brennan','N10','red','neg','Negotiator',[['Cell','949-338-7085'],['Wk cell','949-338-7085']],{mode:'sched',days:'FRI-SUN',start:600,end:1830},''),
+  P('P. Wilks','N12','red','neg','Negotiator',[['Cell','951-858-4965'],['Wk cell','949-656-5234']],{mode:'sched',days:'MON-THURS',start:1300,end:2300},''),
+  P('K. Carrillo','N14','red','neg','Negotiator',[['Cell','909-544-3820'],['Wk cell','949-413-4577']],{mode:'sched',days:'FRI-SUN',start:1830,end:700},'VZ'),
+  P('L. Thrap','N16','red','neg','Negotiator',[['Cell','714-345-7351'],['Wk cell','949-604-7587']],{mode:'sched',days:'SAT-MON',start:1330,end:200},'AT&T'),
   P('T. Wackerman','N18','red','neg','Negotiator',[['Cell','949-525-7150'],['Wk cell','657-270-0127']],{mode:'sched',days:'SUN-TUES',start:1800,end:630},'T-Mobile'),
   P('D. Reinhold','TR','red','tech','Tech Reserve',[['Cell','949-796-0100']],{mode:'oncall'},'VZ'),
 
   /* BOTH */
-  P('M. Schreiber','PSY','shared','tech','Tech Reserve — Psychologist',[['Cell','949-424-9178'],['Alt','949-344-0136']],{mode:'oncall'},'VZ'),
-  P('M. Jankowski','RES','shared','neg','Reserve Negotiator',[['Cell','714-325-0762'],['Wk cell','657-789-7221']],{mode:'waterfall',days:'THURS-SAT'},'AT&T','Waterfall'),
+  P('M. Schreiber','PSY','shared','tech','Tech Reserve \u2014 Psychologist',[['Cell','949-424-9178'],['Alt','949-344-0136']],{mode:'oncall'},'VZ'),
+  P('M. Jankowski','RES','shared','neg','Reserve Negotiator',[['Cell','714-325-0762'],['Wk cell','657-789-7221']],{mode:'waterfall',days:'THURS-SAT'},'AT&T'),
 
-  /* TACTICAL DISPATCHERS — part of the Red / Blue line-ups */
+  /* TACTICAL DISPATCHERS \u2014 part of the Red / Blue line-ups */
   P('L. Bale','TOC1','red','toc','Dispatch Assistant Team Leader',[['Cell','714-309-6747'],['Wk cell','949-300-0038']],{mode:'sched',days:'SUN-TUES',start:600,end:1800},'AT&T'),
   P('S. Miller','TOC3','red','toc','Tactical Dispatcher',[['Cell','626-617-3358'],['Wk cell','949-529-7977']],{mode:'sched',days:'SUN-TUES',start:1800,end:600},''),
-  P('K. Almeida','TOC4','red','toc','Tactical Dispatcher',[['Cell','909-908-3317'],['Wk cell','949-665-3014']],{mode:'leave'},'VZ','Maternity leave'),
+  P('K. Almeida','TOC4','red','toc','Tactical Dispatcher',[['Cell','909-908-3317'],['Wk cell','949-665-3014']],{mode:'sched',days:'THURS-SAT',start:1100,end:2330},'VZ'),
   P('L. Marangi','TOC2','blue','toc','Tactical Dispatcher',[['Cell','714-209-1742'],['Wk cell','949-294-2180']],{mode:'sched',days:'WED-SAT',start:600,end:1600},'AT&T'),
   P('S. Azad','TOC5','blue','toc','Tactical Dispatcher',[['Cell','951-772-6517']],{mode:'sched',days:'WED-FRI',start:1800,end:600},'T-Mobile'),
-  P('B. Zerrenner','TOC6','blue','toc','Tactical Dispatcher',[['Cell','714-351-5770']],{mode:'sched',days:'THURS-SAT',start:600,end:1830},'AT&T'),
+  P('B. Zerrenner','TOC6','blue','toc','Tactical Dispatcher',[['Cell','714-351-5770']],{mode:'sched',days:'SUN-TUES',start:600,end:1830},'AT&T'),
   P('A. Yu','TOC7','blue','toc','Tactical Dispatcher',[['Cell','626-423-9155']],{mode:'sched',days:'WED-FRI',start:600,end:1800},'T-Mobile')
 ];
 let ROSTER = DEFAULT_ROSTER.map(o=>Object.assign({},o));
@@ -967,6 +969,7 @@ const fmt = v => String(Math.floor(v/100)).padStart(2,'0')+String(v%100).padStar
 const telify = n => 'tel:+1'+n.replace(/\D/g,'');
 function shiftLabel(p){
   if(p.mode==='oncall')   return {days:'On-call', time:'24/7'};
+  if(p.vacant)            return {days:'Position open', time:''};
   if(p.mode==='leave')    return {days:p.note||'Unavailable', time:''};
   if(p.mode==='waterfall')return {days:p.daysLabel, time:'Waterfall'};
   return {days:p.daysLabel, time:fmt(p.start)+'–'+fmt(p.end)};
@@ -976,8 +979,9 @@ function shiftLabel(p){
 function card(p,wh){
   const on=isOn(p,wh), sl=shiftLabel(p);
   const el=document.createElement('article');
-  el.className='card '+p.team+(on?' live':' off');
-  const st = p.mode==='leave' ? ['status leave','Off roster']
+  el.className='card '+p.team+(on?' live':' off')+(p.vacant?' vacant':'');
+  const st = p.vacant ? ['status leave','VACANT']
+           : p.mode==='leave' ? ['status leave','Off roster']
            : on ? ['status on', p.mode==='oncall'?'On-call':'On Duty']
            : ['status','Off'];
   el.innerHTML=`
@@ -1001,6 +1005,7 @@ function card(p,wh){
 /* shows current-block coverage swaps on roster cards */
 function swapNote(p){
   if(typeof COV==='undefined') return '';
+  if(p.vacant) return '';        /* an empty seat cannot cover or be covered */
   const i=blockIndex(new Date());
   const mine=segsFor(i,p.cs);
   const out=[];
@@ -1251,11 +1256,6 @@ function loadCov(){
   const local=readLocalCov();
   COV = local ? local.cov : buildSeedCoverage();
 }
-function resetCov(){
-  if(!confirm('Discard coverage edits and reload the windows transcribed from the rotation sheet?')) return;
-  COV=buildSeedCoverage(); saveCov();
-  renderCoverage(new Date()); renderLive(); renderRoster(new Date()); renderCal(new Date());
-}
 function saveCov(){
   try{
     localStorage.setItem(STORE_KEY,JSON.stringify({
@@ -1265,6 +1265,14 @@ function saveCov(){
 }
 
 const byCs = cs => ROSTER.find(p=>p.cs===cs);
+/* A call sign in a coverage record may no longer belong to anyone: the member
+   left, or the slot went vacant. Resolve to a visible placeholder rather than
+   letting an undefined lookup break the page. */
+function memberOf(cs){
+  return byCs(cs) || { cs, name:'(no longer on the roster)', team:'shared', sub:'neg',
+    role:'', phones:[['Cell','\u2014']], mode:'oncall', days:[], daysLabel:'',
+    carrier:'', note:'' };
+}
 const segsFor = (i,cs) => ((COV[i]||{})[cs]||[]).slice().sort((x,y)=>x.s-y.s);
 const allSegs = i => Object.entries(COV[i]||{}).flatMap(([cs,arr])=>arr.map(x=>Object.assign({cs},x)));
 const overlaps = (a1,a2,b1,b2) => a1<b2 && b1<a2;
@@ -1303,7 +1311,7 @@ function covBar(p,i,now){
   bar.innerHTML='<div class="base"></div><div class="ticks"></div>';
   segs.forEach(sg=>{
     const el=document.createElement('div');
-    const who=byCs(sg.by);
+    const who=memberOf(sg.by);
     el.className='covseg '+(who?who.team:'shared');
     el.style.left=((sg.s-bs)/span*100)+'%';
     el.style.width=Math.max((sg.e-sg.s)/span*100,.6)+'%';
@@ -1350,7 +1358,7 @@ function onCallRow(p,i,now){
   if(segs.length){
     const list=document.createElement('div'); list.className='seglist';
     segs.forEach(sg=>{
-      const w=byCs(sg.by);
+      const w=memberOf(sg.by);
       const row=document.createElement('div'); row.className='seg';
       row.innerHTML=`<span class="when">${dtShort(sg.s)} &rarr; ${dtShort(sg.e)}</span>
         <span>${durLabel(sg.e-sg.s)}</span>
@@ -1424,7 +1432,7 @@ function renderCoverage(now){
   }else{
     segs.sort((a,b)=>a.s-b.s);
     sum.innerHTML=segs.map(x=>{
-      const a=byCs(x.cs), b=byCs(x.by);
+      const a=memberOf(x.cs), b=memberOf(x.by);
       return `<div class="sumline"><span class="when" style="color:var(--text)">${dtShort(x.s)} &rarr; ${dtShort(x.e)}</span>
         <span class="sign">${a.cs}</span><span>${a.name}</span>
         <span class="arrow">covered by</span>
@@ -1434,7 +1442,7 @@ function renderCoverage(now){
     const cp=document.getElementById('copySwaps');
     cp.addEventListener('click',()=>{
       const txt=`CNT coverage — ${MDY(s)} 0700 to ${MDY(e)} 0700 (${duty==='blue'?'Blue':'Red'} Team)\n`+
-        segs.map(x=>`${dtShort(x.s)} to ${dtShort(x.e)} — ${x.cs} ${byCs(x.cs).name} covered by ${x.by} ${byCs(x.by).name}${x.note?` (${x.note})`:''}`).join('\n');
+        segs.map(x=>`${dtShort(x.s)} to ${dtShort(x.e)} — ${x.cs} ${memberOf(x.cs).name} covered by ${x.by} ${memberOf(x.by).name}${x.note?` (${x.note})`:''}`).join('\n');
       navigator.clipboard.writeText(txt).then(
         ()=>{cp.textContent='Copied';setTimeout(()=>cp.textContent='Copy for the sheet',1600);},
         ()=>{cp.textContent='Copy failed';});
@@ -1548,7 +1556,7 @@ function coverAt(i,cs,t){ return segsFor(i,cs).find(x=>t>=x.s && t<x.e) || null;
 function holderAt(p,t){
   const i=blockIndex(new Date(t));
   const sg=coverAt(i,p.cs,t);
-  return sg ? {person:byCs(sg.by), slot:p, seg:sg} : {person:p, slot:p, seg:null};
+  return sg ? {person:memberOf(sg.by), slot:p, seg:sg} : {person:p, slot:p, seg:null};
 }
 
 /* signature of the whole call picture, used to find the next change */
@@ -1837,7 +1845,7 @@ function splitByCover(p,s,e){
   segs.forEach(sg=>{
     const a=Math.max(sg.s,s), b=Math.min(sg.e,e);
     if(a>cur) out.push({s:cur,e:a,holder:p,seg:null});
-    out.push({s:a,e:b,holder:byCs(sg.by)||p,seg:sg});
+    out.push({s:a,e:b,holder:memberOf(sg.by),seg:sg});
     cur=b;
   });
   if(cur<e) out.push({s:cur,e,holder:p,seg:null});
@@ -1871,7 +1879,7 @@ function piecesOnDay(p,date){
           return o.filter(([q,z])=>z>q);
         });
       });
-      gaps.forEach(([a,b])=>out.push({s:a,e:b,holder:byCs(sg.by)||p,seg:sg}));
+      gaps.forEach(([a,b])=>out.push({s:a,e:b,holder:memberOf(sg.by),seg:sg}));
     }));
   return out.sort((x,y)=>x.s-y.s);
 }
@@ -2429,7 +2437,6 @@ document.getElementById('mNow').addEventListener('click',()=>{momentT=null;rende
 document.getElementById('covPrev').addEventListener('click',()=>{covIdx--;renderCoverage(new Date());});
 document.getElementById('covNext').addEventListener('click',()=>{covIdx++;renderCoverage(new Date());});
 document.getElementById('covNow').addEventListener('click',()=>{covIdx=blockIndex(new Date());renderCoverage(new Date());});
-document.getElementById('covReset').addEventListener('click',resetCov);
 document.getElementById('gateGo').addEventListener('click',gateSubmit);
 ['gatePw','gatePw2'].forEach(id=>document.getElementById(id)
   .addEventListener('keydown',e=>{ if(e.key==='Enter') gateSubmit(); }));
