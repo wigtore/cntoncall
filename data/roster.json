@@ -1,6 +1,6 @@
 {
- "version": 108,
- "updated": "2026-08-26T14:35:41.616Z",
+ "version": 109,
+ "updated": "2026-08-26T14:36:39.955Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -181,11 +181,11 @@
    "end": 630
   },
   {
+   "cs": "TR1",
    "name": "T. Hobbs",
-   "cs": "TS",
    "team": "blue",
    "sub": "tech",
-   "role": "Tech Services",
+   "role": "Technical Reserve",
    "phones": [
     [
      "Cell",
@@ -197,6 +197,7 @@
     ]
    ],
    "carrier": "VZ",
+   "note": "",
    "mode": "oncall",
    "daysLabel": ""
   },
