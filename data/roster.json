@@ -1,6 +1,6 @@
 {
- "version": 107,
- "updated": "2026-08-26T14:35:28.385Z",
+ "version": 108,
+ "updated": "2026-08-26T14:35:41.616Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -400,8 +400,8 @@
    "end": 630
   },
   {
+   "cs": "TR2",
    "name": "D. Reinhold",
-   "cs": "TR",
    "team": "red",
    "sub": "tech",
    "role": "Tech Reserve",
@@ -412,6 +412,7 @@
     ]
    ],
    "carrier": "VZ",
+   "note": "",
    "mode": "oncall",
    "daysLabel": ""
   },
