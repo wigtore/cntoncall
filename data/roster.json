@@ -1,6 +1,6 @@
 {
- "version": 144,
- "updated": "2026-09-02T20:08:55.946Z",
+ "version": 145,
+ "updated": "2026-09-04T02:41:09.323Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -128,20 +128,22 @@
   },
   {
    "cs": "N13",
-   "name": "**Vacant**",
+   "name": "B. MARTINEZ",
    "team": "blue",
    "sub": "neg",
-   "role": "Negotiator — position open",
+   "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "000-000-0000"
+     "310-955-7342"
     ]
    ],
    "carrier": "",
    "note": "This seat is currently unfilled",
-   "mode": "oncall",
-   "daysLabel": ""
+   "mode": "sched",
+   "daysLabel": "TUES-FRI",
+   "start": 700,
+   "end": 1700
   },
   {
    "name": "Sgt. R. Newton",
