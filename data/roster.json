@@ -1,6 +1,6 @@
 {
- "version": 149,
- "updated": "2026-09-16T15:28:44.117Z",
+ "version": 150,
+ "updated": "2026-09-17T21:53:18.266Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -364,8 +364,8 @@
    "end": 700
   },
   {
-   "name": "L. Thrap",
    "cs": "N16",
+   "name": "L. Tharp",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -380,6 +380,7 @@
     ]
    ],
    "carrier": "AT&T",
+   "note": "",
    "mode": "sched",
    "daysLabel": "SAT-MON",
    "start": 1330,
