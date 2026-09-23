@@ -1,6 +1,6 @@
 {
- "version": 152,
- "updated": "2026-09-23T07:12:59.276Z",
+ "version": 153,
+ "updated": "2026-09-23T07:27:32.142Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -342,15 +342,15 @@
    "end": 2300
   },
   {
-   "name": "K. Carrillo",
    "cs": "N14",
+   "name": "K. Carrillo",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "909-544-3820"
+     "909-544-6820"
     ],
     [
      "Wk cell",
@@ -358,6 +358,7 @@
     ]
    ],
    "carrier": "VZ",
+   "note": "",
    "mode": "sched",
    "daysLabel": "FRI-SUN",
    "start": 1830,
