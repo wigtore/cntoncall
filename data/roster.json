@@ -1,6 +1,6 @@
 {
- "version": 154,
- "updated": "2026-09-24T16:32:54.656Z",
+ "version": 155,
+ "updated": "2026-10-03T23:13:56.666Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -146,23 +146,21 @@
    "end": 1700
   },
   {
-   "name": "Sgt. R. Newton",
    "cs": "N15",
+   "name": "**TPD VACANCY**",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "949-412-4413"
+     "000-000-0000"
     ]
    ],
    "carrier": "T-Mobile",
-   "note": "Light duty until October",
-   "mode": "sched",
-   "daysLabel": "MON-THURS",
-   "start": 700,
-   "end": 1700
+   "note": "",
+   "mode": "leave",
+   "daysLabel": ""
   },
   {
    "cs": "N17",
