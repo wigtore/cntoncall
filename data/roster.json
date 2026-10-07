@@ -1,6 +1,6 @@
 {
- "version": 156,
- "updated": "2026-10-06T18:53:43.323Z",
+ "version": 157,
+ "updated": "2026-10-07T22:02:13.742Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -296,8 +296,8 @@
    "end": 2300
   },
   {
-   "name": "E. Brennan",
    "cs": "N10",
+   "name": "E. Brennan **CURRENTLY UNAVAILABLE**",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
@@ -312,6 +312,7 @@
     ]
    ],
    "carrier": "",
+   "note": "",
    "mode": "sched",
    "daysLabel": "FRI-SUN",
    "start": 600,
