@@ -1,6 +1,6 @@
 {
- "version": 159,
- "updated": "2026-10-16T13:26:24.378Z",
+ "version": 160,
+ "updated": "2026-10-16T13:27:29.632Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -207,22 +207,19 @@
    "daysLabel": ""
   },
   {
-   "name": "Sgt. A. Batstone",
    "cs": "N2",
+   "name": "Sgt. H. Larum",
    "team": "red",
    "sub": "lead",
    "role": "Team Leader",
    "phones": [
     [
      "Cell",
-     "714-600-0874"
-    ],
-    [
-     "Wk cell",
-     "949-491-3037"
+     "949-233-7723"
     ]
    ],
    "carrier": "AT&T",
+   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
    "start": 600,
