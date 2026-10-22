@@ -1,6 +1,6 @@
 {
- "version": 163,
- "updated": "2026-10-20T06:13:44.779Z",
+ "version": 164,
+ "updated": "2026-10-22T02:08:17.877Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -588,8 +588,8 @@
    "end": 1830
   },
   {
-   "name": "A. Yu",
    "cs": "TOC7",
+   "name": "A. Yu",
    "team": "blue",
    "sub": "toc",
    "role": "Tactical Dispatcher",
@@ -600,10 +600,11 @@
     ]
    ],
    "carrier": "T-Mobile",
+   "note": "",
    "mode": "sched",
-   "daysLabel": "WED-FRI",
-   "start": 600,
-   "end": 1800
+   "daysLabel": "SUN-TUES",
+   "start": 1800,
+   "end": 600
   },
   {
    "cs": "TR3",
