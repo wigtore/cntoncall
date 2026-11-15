@@ -1,6 +1,6 @@
 {
- "version": 180,
- "updated": "2026-11-15T05:04:55.871Z",
+ "version": 181,
+ "updated": "2026-11-15T13:07:18.362Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -157,7 +157,7 @@
      "714-325-0762"
     ]
    ],
-   "carrier": "",
+   "carrier": "AT&T",
    "note": "",
    "mode": "waterfall",
    "daysLabel": "THURS-SAT"
