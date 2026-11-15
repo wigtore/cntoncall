@@ -1,6 +1,6 @@
 {
- "version": 176,
- "updated": "2026-11-15T04:14:44.540Z",
+ "version": 177,
+ "updated": "2026-11-15T04:16:14.896Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -444,24 +444,23 @@
    "daysLabel": ""
   },
   {
-   "name": "M. Jankowski",
    "cs": "RES",
+   "name": "R. Ward",
    "team": "shared",
    "sub": "neg",
-   "role": "Reserve Negotiator",
+   "role": "TPD Sergeant / Negotiator",
    "phones": [
     [
      "Cell",
-     "714-325-0762"
-    ],
-    [
-     "Wk cell",
-     "657-789-7221"
+     "562-252-5502"
     ]
    ],
-   "carrier": "AT&T",
-   "mode": "waterfall",
-   "daysLabel": "THURS-SAT"
+   "carrier": "",
+   "note": "",
+   "mode": "sched",
+   "daysLabel": "SUN-TUES",
+   "start": 1800,
+   "end": 630
   },
   {
    "name": "L. Bale",
