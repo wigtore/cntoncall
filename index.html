@@ -694,7 +694,7 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
             <label>Days from<select class="fin" id="eD1"></select></label>
             <label>Days to<select class="fin" id="eD2"></select></label>
           </div>
-          <div class="formrow">
+          <div class="formrow" id="timeFields">
             <label>Start<input class="fin" type="time" id="eT1" step="900"></label>
             <label>End<input class="fin" type="time" id="eT2" step="900"></label>
           </div>
@@ -1714,8 +1714,11 @@ function fillDaySelects(){
   });
 }
 function syncModeFields(){
+  const mode=document.getElementById('eMode').value;
+  /* set work hours: days + hours.  waterfall: days only.  others: neither */
   document.getElementById('schedFields').style.display=
-    document.getElementById('eMode').value==='sched' ? '' : 'none';
+    (mode==='sched'||mode==='waterfall') ? '' : 'none';
+  document.getElementById('timeFields').style.display= mode==='sched' ? '' : 'none';
 }
 function openEditor(cs){
   fillDaySelects();
