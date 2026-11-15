@@ -1560,6 +1560,11 @@ function commit(){
 function closePicker(){ document.getElementById('picker').hidden=true; pending=null; }
 
 /* ================= live on-call roster ================= */
+/* Who goes in a team's call-out list: Blue or Red members with set work hours
+   or waterfall days. On-call 24/7 staff and shared (both-team) people are
+   listed under Reserves, tech and psych instead. */
+const inCallOut = p => (p.team==='blue'||p.team==='red') && (p.mode==='sched'||p.mode==='waterfall');
+
 /* call-out order: N1, N2, N3 … then TOC1-7, then lettered reserves */
 function signRank(cs){
   const m=cs.match(/^([A-Z]+)(\d+)$/);
@@ -1643,13 +1648,13 @@ function renderLive(){
     sec.appendChild(list); host.appendChild(sec);
   };
 
-  const team=ROSTER.filter(p=>p.team===duty&&p.mode==='sched').sort(bySign);
+  const team=ROSTER.filter(p=>p.team===duty&&inCallOut(p)).sort(bySign);
   sect('Call-out order — negotiators','Listed by call sign. The whole team is on call for the block — <b>On Duty</b> means they are also inside their regular shift hours right now. Coverage swaps are already applied.',
        team.filter(p=>p.sub!=='toc'));
   sect('Call-out order — tactical dispatchers','Same block and same team colour, listed after the negotiators.',
        team.filter(p=>p.sub==='toc'));
   sect('Reserves, tech and psych','Available around the clock regardless of block.',
-       ROSTER.filter(p=>p.mode!=='leave'&&p.mode!=='sched'&&(p.team===duty||p.team==='shared')).sort(bySign));
+       ROSTER.filter(p=>p.mode!=='leave'&&!inCallOut(p)&&(p.team===duty||p.team==='shared')).sort(bySign));
 
   if(!host.children.length)
     host.innerHTML='<section class="sec"><div class="empty">Nobody is listed as on call at this moment.</div></section>';
@@ -1969,10 +1974,10 @@ function renderDay(){
     const h=document.createElement('p'); h.className='daygroup'; h.textContent=label; body.appendChild(h);
     rows.forEach(r=>body.appendChild(r));
   };
-  const onBlock=ROSTER.filter(p=>(p.team==='blue'||p.team==='red')&&p.mode==='sched');
+  const onBlock=ROSTER.filter(inCallOut);
   group('On call — negotiators', onBlock.filter(p=>p.sub!=='toc'));
   group('On call — tactical dispatchers', onBlock.filter(p=>p.sub==='toc'));
-  group('Reserves, tech and psych', ROSTER.filter(p=>p.mode!=='leave'&&p.mode!=='sched'));
+  group('Reserves, tech and psych', ROSTER.filter(p=>p.mode!=='leave'&&!inCallOut(p)));
   if(!body.children.length)
     body.innerHTML='<div class="empty">Nobody is scheduled on this date.</div>';
 }

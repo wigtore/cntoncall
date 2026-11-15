@@ -85,11 +85,13 @@ export function buildEmail({ members, windows, training }, i, { test = false, si
   const byCs = cs => members.find(p => p.cs === cs);
   const label = cs => { const p = byCs(cs); return p ? cs + ' ' + clean(p.name) : cs; };
 
-  const onTeam = members.filter(p => p.team === team && p.mode === 'sched').sort(bySign);
+  /* same rule as the site: team members with set hours or waterfall days */
+  const inCallOut = p => p.team === team && (p.mode === 'sched' || p.mode === 'waterfall');
+  const onTeam = members.filter(inCallOut).sort(bySign);
   const negs = onTeam.filter(p => p.sub !== 'toc');
   const tocs = onTeam.filter(p => p.sub === 'toc');
   const reserves = members
-    .filter(p => p.mode !== 'leave' && p.mode !== 'sched' && (p.team === team || p.team === 'shared'))
+    .filter(p => p.mode !== 'leave' && !inCallOut(p) && (p.team === team || p.team === 'shared'))
     .sort(bySign);
 
   const swaps = (windows || [])
