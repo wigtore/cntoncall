@@ -818,6 +818,15 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       </div>
 
       <div class="adminsec">
+        <h3>Handoff email</h3>
+        <p class="adminnote">Every handoff Thursday at 0700 the site emails the incoming team's call-out list and coverage swaps. Use the button to send a test copy of the next one.</p>
+        <div class="formerr" id="heErr" hidden></div>
+        <p class="adminnote" id="heStatus" style="color:var(--text)">Checking…</p>
+        <button class="btn primary" id="heTest">Send test email</button>
+        <div id="heFlash"></div>
+      </div>
+
+      <div class="adminsec">
       <h3>Site password</h3>
       <p class="adminnote">Changes the password everyone uses to open this site. Everyone will be signed out and will need the new one.</p>
       <div class="formerr" id="pwErr" hidden></div>
@@ -843,9 +852,15 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
 const ANCHOR = new Date(2026,6,23,7,0,0);   // Thu 7/23/2026 0700 = Red
 const BLOCK_MS = 14*24*60*60*1000;
 
-function blockIndex(d){ return Math.floor((d-ANCHOR)/BLOCK_MS); }
+/* Blocks are counted in calendar days, so the handoff stays at 0700 local
+   time on both sides of a daylight-saving change. */
+function blockIndex(d){
+  let i=Math.floor((d-ANCHOR)/BLOCK_MS);
+  if(d<blockStart(i)) i--; else if(d>=blockStart(i+1)) i++;
+  return i;
+}
 function blockTeam(i){ return ((i%2)+2)%2===0 ? 'red' : 'blue'; }
-function blockStart(i){ return new Date(ANCHOR.getTime()+i*BLOCK_MS); }
+function blockStart(i){ return new Date(2026,6,23+14*i,7,0,0); }
 function teamAt(d){ return blockTeam(blockIndex(d)); }
 
 const MD = d => (d.getMonth()+1)+'/'+d.getDate();
@@ -2357,6 +2372,35 @@ function trRemove(id){
   syncUp('Removed '+(t.title||'training day'));
 }
 
+/* ---- admin: handoff email ---- */
+function heErr(msg){ const el=document.getElementById('heErr'); el.textContent=msg||''; el.hidden=!msg; }
+async function loadHandoff(){
+  const st=document.getElementById('heStatus');
+  const r=await fetchJSON('/api/handoff-email',{headers:authHeaders(),cache:'no-store'});
+  if(!r.ok||!r.body){
+    st.textContent = r.status===404 ? 'The email feature is not installed on this site yet.'
+      : (r.body&&r.body.message) || 'Could not check the email settings.';
+    document.getElementById('heTest').disabled=true; return;
+  }
+  const b=r.body;
+  document.getElementById('heTest').disabled=!b.ready;
+  if(!b.ready){ st.innerHTML='<b>Not set up yet.</b> '+esc(b.problem||''); return; }
+  st.innerHTML='Next email: <b>'+esc(b.next.handoff)+'</b> ('+esc(b.next.team)+') to <b>'+b.to.map(esc).join(', ')+'</b>'+
+    (b.last?'<br>Last sent: '+esc(b.last.handoff)+' ('+esc(b.last.team)+')':'<br>No automatic email has been sent yet.');
+}
+async function sendHandoffTest(){
+  heErr('');
+  if(!confirm('Send a TEST copy of the next handoff email now?\n\nIt goes to everyone on the email list, marked as a test.')) return;
+  const btn=document.getElementById('heTest'); btn.disabled=true;
+  try{
+    const r=await fetchJSON('/api/handoff-email',{method:'POST',headers:authHeaders()});
+    if(!r.ok){ heErr((r.body&&r.body.message)||'The test email could not be sent.'); return; }
+    document.getElementById('heFlash').innerHTML='<div class="flashbar">Test email sent to '+r.body.to.map(esc).join(', ')+'. Check the inbox (and spam folder).</div>';
+    setTimeout(()=>{document.getElementById('heFlash').innerHTML='';},9000);
+  }catch(e){ heErr('Could not reach the site. Try again.'); }
+  finally{ btn.disabled=false; }
+}
+
 /* ---- admin: change the password ---- */
 function pwErr(msg){
   const el=document.getElementById('pwErr');
@@ -2443,10 +2487,12 @@ document.getElementById('gateGo').addEventListener('click',gateSubmit);
 document.getElementById('adminToggle').addEventListener('click',()=>{
   const b=document.getElementById('adminBody'), t=document.getElementById('adminToggle');
   const open=b.hidden; b.hidden=!open; t.setAttribute('aria-expanded',open?'true':'false');
+  if(open) loadHandoff();
 });
 document.getElementById('trSave').addEventListener('click',trSave);
 document.getElementById('trCancel').addEventListener('click',trReset);
 document.getElementById('pwSave').addEventListener('click',changePassword);
+document.getElementById('heTest').addEventListener('click',sendHandoffTest);
 ['pwNew','pwNew2'].forEach(id=>document.getElementById(id)
   .addEventListener('keydown',e=>{ if(e.key==='Enter') changePassword(); }));
 document.getElementById('addMember').addEventListener('click',()=>openEditor(null));

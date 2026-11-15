@@ -1,0 +1,8 @@
+{
+  "name": "cnt-oncall",
+  "private": true,
+  "description": "CNT on-call site. Only dependency: nodemailer, used by the handoff email.",
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  }
+}
