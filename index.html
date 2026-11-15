@@ -280,6 +280,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15
 .sumline .arrow{color:var(--dim)}
 .savenote{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:12px;line-height:1.6}
 
+/* ---------- text the on-call team ---------- */
+.txbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}
+.txbar .btn{font-size:15px;padding:9px 16px 8px}
+.txbar .txhint{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.txgroup{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 2px 6px;display:flex;align-items:center;gap:8px}
+.txgroup .txall{margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--blue);background:none;border:0;cursor:pointer;padding:2px 0;text-transform:uppercase}
+.txrow{display:flex;align-items:center;gap:11px;background:var(--bg);border:1px solid var(--line-soft);border-left:3px solid var(--dim);border-radius:9px;padding:9px 11px;margin-bottom:6px;cursor:pointer}
+.txrow.blue{border-left-color:var(--blue)} .txrow.red{border-left-color:var(--red)} .txrow.shared{border-left-color:var(--shared)}
+.txrow input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--blue);margin:0}
+.txrow .sg{font-family:var(--mono);font-size:12px;font-weight:600;min-width:42px;color:var(--muted)}
+.txrow .nm{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.txrow .sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.txrow .sub .amber{color:var(--amber)}
+.txrow.off{opacity:.55}
+.txmsg{width:100%;min-height:74px;resize:vertical;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--text);font-family:var(--body);font-size:15px}
+.txmsg:focus{outline:2px solid var(--blue);outline-offset:1px}
+.txcount{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:8px 2px 4px}
+a.btn{text-decoration:none;text-align:center}
+a.btn.disabled{pointer-events:none;opacity:.4}
+
 /* ---------- coverage strips & form ---------- */
 .crow.stacked{flex-direction:column;align-items:stretch;gap:9px}
 .crowtop{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
@@ -591,6 +611,10 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       </div>
       <p class="msub" id="mSub"></p>
     </div>
+    <div class="txbar">
+      <button class="btn primary" id="txOpen">Text the on-call team</button>
+      <span class="txhint">Opens a group text on your phone. Nothing sends until you press send.</span>
+    </div>
     <div id="liveList"></div>
   </section>
 
@@ -731,6 +755,21 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
       <div id="logList"></div>
     </div>
   </section>
+
+  <div class="overlay" id="txSheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="txTitle">
+      <header>
+        <h3 id="txTitle">Text the on-call team</h3>
+        <p class="hint" id="txHint"></p>
+      </header>
+      <div class="body" id="txBody"></div>
+      <footer style="flex-wrap:wrap">
+        <button class="btn" id="txCopy">Copy numbers</button>
+        <button class="btn" id="txCancel">Cancel</button>
+        <a class="btn primary" id="txSend" href="#" style="flex:1">Open in Messages</a>
+      </footer>
+    </div>
+  </div>
 
   <div class="overlay" id="daySheet" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
@@ -1660,6 +1699,90 @@ function renderLive(){
     host.innerHTML='<section class="sec"><div class="empty">Nobody is listed as on call at this moment.</div></section>';
 }
 
+/* ================= text the on-call team =================
+   Builds a group text in the phone's own Messages app. The site never sends
+   anything itself: the person reviews it and presses send.
+   - Everyone on call at the moment shown (live by default), coverage applied,
+     is pre-ticked. Anyone marked unavailable starts un-ticked.
+   - Reserves, tech and psych are listed un-ticked to pick from. */
+let txPeople=[];        // [{key, num, name, ...}] for the open sheet
+const TX_DEFAULT='CNT CALL-OUT: Call Dispatch for details.';
+
+const cellOf = p => {
+  const ph=(p.phones||[]).find(x=>/^cell$/i.test(x[0])) || (p.phones||[])[0];
+  if(!ph) return null;
+  const d=ph[1].replace(/\D/g,'');
+  return d.length===10 ? '+1'+d : d.length===11&&d[0]==='1' ? '+'+d : null;
+};
+const isUnavailable = p => /unavailable/i.test(p.name||'') || /unavailable/i.test(p.note||'');
+const plainName = n => String(n||'').replace(/\*+/g,'').replace(/\s+/g,' ').trim();
+
+function openTextSheet(){
+  const t=viewT(), d=new Date(t), i=blockIndex(d), duty=blockTeam(i), live=momentT===null;
+  txPeople=[]; const seen=new Set();
+  const add=(slot,group)=>{
+    const h=holderAt(slot,t), who=h.person;
+    if(!who || who.vacant || seen.has(who.cs)) return;
+    const num=cellOf(who); if(!num) return;
+    seen.add(who.cs);
+    txPeople.push({ key:who.cs, num, group, team:who.team, who, slot, seg:h.seg,
+      on: group==='team' && !isUnavailable(who) });
+  };
+  ROSTER.filter(p=>p.team===duty&&inCallOut(p)).sort(bySign).forEach(p=>add(p,'team'));
+  ROSTER.filter(p=>p.mode!=='leave'&&!inCallOut(p)&&(p.team===duty||p.team==='shared')).sort(bySign)
+    .forEach(p=>add(p,'res'));
+
+  const teamName=duty==='blue'?'Blue Team':'Red Team';
+  document.getElementById('txHint').innerHTML=
+    `<b class="${duty==='blue'?'t-blue':'t-red'}">${teamName}</b> · on call at `+
+    DOW[d.getDay()].toUpperCase()+' '+MD(d)+' '+pad2(d.getHours())+pad2(d.getMinutes())+
+    (live?'':' <span class="t-amber">(preview time, not now)</span>');
+
+  const row=x=>{
+    const w=x.who, covering = x.seg ? `<span class="amber">Covering ${x.slot.cs} ${esc(plainName(x.slot.name))}</span> · ` : '';
+    const unav = isUnavailable(w) ? '<span class="amber">Marked unavailable</span> · ' : '';
+    return `<label class="txrow ${w.team}${x.on?'':' off'}">
+      <input type="checkbox" data-k="${esc(x.key)}"${x.on?' checked':''}>
+      <span class="sg">${esc(w.cs)}</span>
+      <span style="flex:1;min-width:0"><span class="nm">${esc(plainName(w.name))}</span><br>
+      <span class="sub">${covering}${unav}${esc(x.num.replace(/^\+1(\d{3})(\d{3})(\d{4})$/,'$1-$2-$3'))}</span></span>
+    </label>`;
+  };
+  const team=txPeople.filter(x=>x.group==='team'), res=txPeople.filter(x=>x.group==='res');
+  document.getElementById('txBody').innerHTML=
+    `<p class="txgroup">On call — ${teamName}<button class="txall" data-g="team">All / none</button></p>`+
+    (team.length?team.map(row).join(''):'<p class="sec-note">Nobody on call at this time.</p>')+
+    (res.length?`<p class="txgroup">Reserves, tech and psych — pick any<button class="txall" data-g="res">All / none</button></p>`+res.map(row).join(''):'')+
+    `<p class="txgroup" style="margin-top:16px">Message</p>
+     <textarea class="txmsg" id="txMsg" maxlength="300">${esc(txLastMsg())}</textarea>
+     <p class="txcount" id="txCount"></p>`;
+  updateTextSheet();
+  document.getElementById('txSheet').hidden=false;
+}
+function txLastMsg(){ try{ return localStorage.getItem('cnt.txMsg')||TX_DEFAULT; }catch(e){ return TX_DEFAULT; } }
+function txChosen(){ return txPeople.filter(x=>x.on).map(x=>x.num); }
+
+/* sms: links differ by phone. iPhone/iPad/Mac: sms:/open?addresses=a,b&body=
+   Android: sms:a,b?body=   (Samsung's app wants ; between numbers) */
+function smsLink(nums,body){
+  const ua=navigator.userAgent, b=encodeURIComponent(body);
+  const apple=/iPhone|iPad|iPod|Macintosh/.test(ua);
+  if(apple) return 'sms:/open?addresses='+nums.join(',')+'&body='+b;
+  const sep=/SamsungBrowser|SM-[A-Z0-9]/.test(ua) ? ';' : ',';
+  return 'sms:'+nums.join(sep)+'?body='+b;
+}
+function updateTextSheet(){
+  const nums=txChosen(), msg=(document.getElementById('txMsg')||{}).value||'';
+  const a=document.getElementById('txSend');
+  a.href = nums.length ? smsLink(nums,msg) : '#';
+  a.classList.toggle('disabled',!nums.length);
+  a.textContent = nums.length ? `Open in Messages (${nums.length})` : 'Pick at least one person';
+  const c=document.getElementById('txCount');
+  if(c) c.textContent = `${nums.length} ${nums.length===1?'person':'people'} selected`+
+    (nums.length>20?' · large groups can be slow to open on some phones':'');
+}
+function closeTextSheet(){ document.getElementById('txSheet').hidden=true; }
+
 /* ================= edit roster ================= */
 const DAYTOK=[['SUN','Sun'],['MON','Mon'],['TUES','Tue'],['WED','Wed'],['THURS','Thu'],['FRI','Fri'],['SAT','Sat']];
 const numToTime = v => pad2(Math.floor(v/100))+':'+pad2(v%100);
@@ -2534,13 +2657,42 @@ document.getElementById('dayPrev').addEventListener('click',()=>stepDay(-1));
 document.getElementById('dayNext').addEventListener('click',()=>stepDay(1));
 document.getElementById('daySheet').addEventListener('click',e=>{if(e.target.id==='daySheet')document.getElementById('daySheet').hidden=true;});
 document.getElementById('pickCancel').addEventListener('click',closePicker);
+document.getElementById('txOpen').addEventListener('click',openTextSheet);
+document.getElementById('txCancel').addEventListener('click',closeTextSheet);
+document.getElementById('txSheet').addEventListener('click',e=>{if(e.target.id==='txSheet')closeTextSheet();});
+document.getElementById('txBody').addEventListener('change',e=>{
+  const k=e.target.dataset&&e.target.dataset.k; if(!k) return;
+  const x=txPeople.find(y=>y.key===k); if(x){ x.on=e.target.checked; e.target.closest('.txrow').classList.toggle('off',!x.on); }
+  updateTextSheet();
+});
+document.getElementById('txBody').addEventListener('click',e=>{
+  const g=e.target.dataset&&e.target.dataset.g; if(!g) return;
+  const grp=txPeople.filter(x=>x.group===g), turnOn=!grp.every(x=>x.on);
+  grp.forEach(x=>{ x.on=turnOn; const cb=document.querySelector('#txBody input[data-k="'+CSS.escape(x.key)+'"]');
+    if(cb){ cb.checked=turnOn; cb.closest('.txrow').classList.toggle('off',!turnOn); } });
+  updateTextSheet();
+});
+document.getElementById('txBody').addEventListener('input',e=>{
+  if(e.target.id!=='txMsg') return;
+  try{ localStorage.setItem('cnt.txMsg',e.target.value); }catch(_){}
+  updateTextSheet();
+});
+document.getElementById('txSend').addEventListener('click',e=>{ if(!txChosen().length) e.preventDefault(); });
+document.getElementById('txCopy').addEventListener('click',async()=>{
+  const nums=txChosen().map(n=>n.replace(/^\+1/,'')).join(', ');
+  const btn=document.getElementById('txCopy');
+  try{ await navigator.clipboard.writeText(nums); btn.textContent='Copied'; }
+  catch(_){ prompt('Copy these numbers:',nums); }
+  setTimeout(()=>{btn.textContent='Copy numbers';},2000);
+});
 document.getElementById('pickSave').addEventListener('click',commit);
 document.querySelectorAll('#presets [data-preset]').forEach(b=>
   b.addEventListener('click',()=>{applyPreset(b.dataset.preset);showErr('');}));
 document.getElementById('picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
-  if(!document.getElementById('daySheet').hidden) document.getElementById('daySheet').hidden=true;
+  if(!document.getElementById('txSheet').hidden) closeTextSheet();
+  else if(!document.getElementById('daySheet').hidden) document.getElementById('daySheet').hidden=true;
   else if(!document.getElementById('picker').hidden) closePicker();
   else if(!document.getElementById('editor').hidden) closeEditor();
 });
