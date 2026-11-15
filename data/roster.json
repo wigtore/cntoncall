@@ -1,6 +1,6 @@
 {
- "version": 175,
- "updated": "2026-11-15T04:13:15.460Z",
+ "version": 176,
+ "updated": "2026-11-15T04:14:44.540Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -147,20 +147,20 @@
   },
   {
    "cs": "N15",
-   "name": "**TPD VACANCY**",
+   "name": "M. Jankowski",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
    "phones": [
     [
      "Cell",
-     "000-000-0000"
+     "714-325-0762"
     ]
    ],
-   "carrier": "T-Mobile",
+   "carrier": "",
    "note": "",
-   "mode": "leave",
-   "daysLabel": ""
+   "mode": "waterfall",
+   "daysLabel": "MON-THURS"
   },
   {
    "cs": "N17",
