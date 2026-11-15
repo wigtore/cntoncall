@@ -15,6 +15,7 @@
  */
 import { createHash, timingSafeEqual } from 'node:crypto';
 import nodemailer from 'nodemailer';
+import { LOGO } from './logo.mjs';
 
 export const TZ = 'America/Los_Angeles';
 const DAY = 864e5, HOUR = 36e5;
@@ -81,7 +82,10 @@ const bySign = (a, b) => signRank(a.cs) - signRank(b.cs);
 export function buildEmail({ members, windows, training }, i, { test = false, siteUrl = '' } = {}) {
   const team = blockTeam(i), bs = blockStart(i), be = blockStart(i + 1);
   const TEAM = team === 'blue' ? 'Blue Team' : 'Red Team';
-  const COLOR = team === 'blue' ? '#1d4ed8' : '#b91c1c';
+  /* the site's day-mode colours */
+  const COLOR = team === 'blue' ? '#1550C4' : '#B92A20';
+  const TINT = team === 'blue' ? '#DEE5F2' : '#EAE2E6';     // header wash, matches the logo background
+  const OTHER = team === 'blue' ? 'Red' : 'Blue';
   const byCs = cs => members.find(p => p.cs === cs);
   const label = cs => { const p = byCs(cs); return p ? cs + ' ' + clean(p.name) : cs; };
 
@@ -136,50 +140,72 @@ export function buildEmail({ members, windows, training }, i, { test = false, si
   T.push('Phone numbers and live changes are on the on-call site' + (siteUrl ? ': ' + siteUrl : '.'));
   T.push('Coverage added after this email was sent will show on the site, not here.');
 
-  /* ---- HTML ---- */
-  const cell = 'padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:14px;vertical-align:top';
-  const mono = 'font-family:Consolas,Menlo,monospace;font-weight:700;white-space:nowrap';
-  const h2 = t => `<h2 style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#374151;margin:22px 0 6px">${t}</h2>`;
-  const hList = (title, people) => !people.length ? '' : h2(title) +
+  /* ---- HTML ----
+     Styled after the site's banner. Fonts: Barlow Condensed / IBM Plex Mono load
+     in Apple Mail and iPhone Mail; Gmail and Outlook use the close fallbacks. */
+  const DISPLAY = `'Barlow Condensed','Oswald','Arial Narrow','Roboto Condensed','Helvetica Neue',Arial,sans-serif`;
+  const MONO = `'IBM Plex Mono',Consolas,Menlo,'Courier New',monospace`;
+  const BODY = `Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif`;
+  const INK = '#111721', MUTED = '#4B5766', DIM = '#5D6A78', LINE = '#E1E6EE';
+
+  const cell = `padding:8px 10px;border-bottom:1px solid ${LINE};font-size:14px;vertical-align:top`;
+  const sign = `font-family:${MONO};font-size:13px;font-weight:600;white-space:nowrap`;
+  const signOf = p => p.team === 'blue' ? '#1550C4' : p.team === 'red' ? '#B92A20' : DIM;
+  const h2 = (t, n) => `<h2 style="font-family:${DISPLAY};font-size:21px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:${INK};margin:24px 0 6px;font-stretch:condensed">${t}` +
+    (n !== undefined ? ` <span style="font-family:${MONO};font-size:11px;font-weight:500;color:${DIM};letter-spacing:.08em">${n}</span>` : '') + `</h2>`;
+  const hList = (title, people) => !people.length ? '' : h2(title, people.length) +
     `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%">` +
     people.map(p => `<tr>
-      <td style="${cell};${mono};width:56px">${esc(p.cs)}</td>
-      <td style="${cell}"><b>${esc(p.name)}</b><br><span style="color:#6b7280;font-size:12.5px">${esc(p.role)} · ${esc(shift(p))}</span>` +
-      (covered.has(p.cs) ? `<br><span style="color:#b45309;font-size:12.5px">Has coverage this block — see below</span>` : '') +
+      <td style="${cell};${sign};color:${signOf(p)};width:58px">${esc(p.cs)}</td>
+      <td style="${cell}"><b style="color:${INK}">${esc(p.name)}</b><br><span style="font-family:${MONO};color:${MUTED};font-size:11.5px">${esc(p.role)} · ${esc(shift(p))}</span>` +
+      (covered.has(p.cs) ? `<br><span style="color:#B45309;font-size:12.5px">Has coverage this block — see below</span>` : '') +
       `</td></tr>`).join('') + `</table>`;
 
-  const hSwaps = h2('Coverage swaps this block') + (!swaps.length
-    ? `<p style="font-size:14px;color:#6b7280;margin:0">None scheduled.</p>`
+  const hSwaps = h2('Coverage swaps this block', swaps.length) + (!swaps.length
+    ? `<p style="font-size:14px;color:${MUTED};margin:0">None scheduled.</p>`
     : `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%">` +
-      swaps.map(w => `<tr><td style="${cell}">
-        <b>${esc(label(w.covered))}</b> covered by <b>${esc(label(w.by))}</b><br>
-        <span style="color:#6b7280;font-size:12.5px">${when(w.s)} &rarr; ${when(w.e)}${w.note ? ' · ' + esc(w.note) : ''}</span>
+      swaps.map(w => `<tr><td style="${cell};border-left:3px solid #D97706;padding-left:10px">
+        <b style="color:${INK}">${esc(label(w.covered))}</b> covered by <b style="color:${INK}">${esc(label(w.by))}</b><br>
+        <span style="font-family:${MONO};color:${MUTED};font-size:11.5px">${when(w.s)} &rarr; ${when(w.e)}${w.note ? ' · ' + esc(w.note) : ''}</span>
       </td></tr>`).join('') + `</table>`);
 
   const hTrain = !trainings.length ? '' : h2('Training this block') +
-    trainings.map(t => `<p style="font-size:14px;margin:0 0 4px"><b>${mdy(t.w)}</b> ${esc(t.title)}` +
+    trainings.map(t => `<p style="font-size:14px;margin:0 0 4px"><span style="font-family:${MONO};font-weight:600">${mdy(t.w)}</span> ${esc(t.title)}` +
       [t.hours, t.location].filter(Boolean).map(x => ' · ' + esc(x)).join('') + `</p>`).join('');
 
-  const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f3f4f6">
-<div style="max-width:620px;margin:0 auto;padding:16px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#111827">
-${test ? `<div style="background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:8px 12px;border-radius:6px;font-size:13px;margin-bottom:12px"><b>Test email</b> — sent from the Admin panel, not the automatic handoff.</div>` : ''}
-<div style="background:${COLOR};color:#fff;padding:16px 18px;border-radius:8px 8px 0 0">
-  <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.85">Crisis Negotiation Team · On-call handoff</div>
-  <div style="font-size:26px;font-weight:800;margin-top:4px">${TEAM} is now on call</div>
-  <div style="font-size:14px;margin-top:4px">${range}</div>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head><body style="margin:0;padding:0;background:#EEF1F6">
+<div style="max-width:640px;margin:0 auto;padding:16px;font-family:${BODY};color:${INK}">
+${test ? `<div style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;padding:8px 12px;border-radius:6px;font-size:13px;margin-bottom:12px"><b>Test email</b> — sent from the Admin panel, not the automatic handoff.</div>` : ''}
+<div style="background:${TINT};border:1px solid ${LINE};border-bottom:3px solid ${COLOR};border-radius:10px 10px 0 0;padding:18px 20px 16px">
+  <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse"><tr>
+    <td style="padding:0 12px 0 0;vertical-align:middle"><img src="cid:cntlogo" width="46" height="49" alt="CNT" style="display:block;border:0;width:46px;height:49px"></td>
+    <td style="vertical-align:middle;font-family:${MONO};font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:${DIM}">Crisis Negotiation Team &middot; On-call rotation</td>
+  </tr></table>
+  <div style="font-family:${DISPLAY};font-weight:700;font-size:54px;line-height:.95;letter-spacing:.01em;text-transform:uppercase;color:${COLOR};margin:12px 0 0;font-stretch:condensed">${TEAM} on call</div>
+  <div style="font-family:${DISPLAY};font-weight:600;font-size:24px;letter-spacing:.14em;color:${INK};margin-top:8px;font-stretch:condensed">${md(bs)} ${hm(bs)} &rarr; ${md(be)} ${hm(be)}</div>
+  <div style="font-family:${MONO};font-size:12.5px;color:${MUTED};margin-top:12px">
+    <span style="color:${COLOR}">&#9679;</span>&nbsp;<b style="color:${INK};font-weight:500">${when(bs)}</b>&nbsp;&nbsp;&nbsp;
+    Handoff <b style="color:${INK};font-weight:500">${when(be)} &rarr; ${OTHER}</b>&nbsp;&nbsp;&nbsp;14d on call
+  </div>
 </div>
-<div style="background:#fff;padding:4px 18px 18px;border-radius:0 0 8px 8px">
-${hList('Negotiators — call-out order', negs)}
-${hList('Tactical dispatchers', tocs)}
-${hList('Reserves, tech and psych — available regardless of block', reserves)}
+<div style="background:#FFFFFF;border:1px solid ${LINE};border-top:0;border-radius:0 0 10px 10px;padding:4px 20px 20px">
+${hList('Call-out order — negotiators', negs)}
+${hList('Call-out order — tactical dispatchers', tocs)}
+${hList('Reserves, tech and psych', reserves)}
 ${hSwaps}
 ${hTrain}
-<p style="font-size:12.5px;color:#6b7280;margin:22px 0 0;line-height:1.5">
+<p style="font-size:12.5px;color:${MUTED};margin:24px 0 0;line-height:1.5">
 Phone numbers and live changes are on the ${siteUrl ? `<a href="${siteUrl}" style="color:${COLOR}">on-call site</a>` : 'on-call site'}.
 Coverage added after this email was sent will show on the site, not here.</p>
 </div></div></body></html>`;
 
-  return { subject, html, text: T.join('\n'), team: TEAM, start: bs, end: be };
+  const attachments = [{ filename: 'cnt-logo.png', content: Buffer.from(LOGO[team], 'base64'),
+    contentType: 'image/png', cid: 'cntlogo', contentDisposition: 'inline' }];
+
+  return { subject, html, text: T.join('\n'), attachments, team: TEAM, start: bs, end: be };
 }
 
 /* ---------------- Gmail ---------------- */
@@ -195,7 +221,7 @@ export function emailSetupProblem({ needList = true } = {}) {
 
 export const looksLikeEmail = s => /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(String(s || '').trim());
 
-export async function sendEmail({ subject, html, text }, to = recipients()) {
+export async function sendEmail({ subject, html, text, attachments }, to = recipients()) {
   const user = process.env.GMAIL_USER.trim();
   const transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -206,7 +232,7 @@ export async function sendEmail({ subject, html, text }, to = recipients()) {
   try {
     const info = await transport.sendMail({
       from: { name: 'CNT On-Call', address: user },
-      to, subject, html, text
+      to, subject, html, text, attachments
     });
     return info.messageId;
   } catch (e) {
