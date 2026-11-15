@@ -1,6 +1,6 @@
 {
- "version": 177,
- "updated": "2026-11-15T04:16:14.896Z",
+ "version": 178,
+ "updated": "2026-11-15T04:34:30.402Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -463,8 +463,8 @@
    "end": 630
   },
   {
-   "name": "L. Bale",
    "cs": "TOC1",
+   "name": "L. Bale",
    "team": "red",
    "sub": "toc",
    "role": "Dispatch Assistant Team Leader",
@@ -479,6 +479,7 @@
     ]
    ],
    "carrier": "AT&T",
+   "note": "",
    "mode": "sched",
    "daysLabel": "SUN-TUES",
    "start": 600,
