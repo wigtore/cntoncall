@@ -1,6 +1,6 @@
 {
- "version": 184,
- "updated": "2026-11-15T16:58:31.288Z",
+ "version": 185,
+ "updated": "2026-11-15T16:58:43.158Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -92,8 +92,8 @@
    "end": 700
   },
   {
-   "name": "J. Yue",
    "cs": "N9",
+   "name": "J. Yue",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -104,10 +104,11 @@
     ]
    ],
    "carrier": "VZ",
+   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
-   "start": 1300,
-   "end": 2300
+   "start": 2100,
+   "end": 700
   },
   {
    "name": "X. Guzman",
