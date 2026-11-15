@@ -1,6 +1,6 @@
 {
- "version": 179,
- "updated": "2026-11-15T04:41:09.896Z",
+ "version": 180,
+ "updated": "2026-11-15T05:04:55.871Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -294,7 +294,7 @@
   },
   {
    "cs": "N10",
-   "name": "E. Brennan **CURRENTLY UNAVAILABLE**",
+   "name": "E. Brennan **Currently Unavailable**",
    "team": "red",
    "sub": "neg",
    "role": "Negotiator",
