@@ -184,14 +184,16 @@ Coverage added after this email was sent will show on the site, not here.</p>
 export const recipients = () =>
   String(process.env.HANDOFF_EMAIL_TO || '').split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
 
-export function emailSetupProblem() {
+export function emailSetupProblem({ needList = true } = {}) {
   if (!process.env.GMAIL_USER) return 'GMAIL_USER is not set in Netlify.';
   if (!process.env.GMAIL_APP_PASSWORD) return 'GMAIL_APP_PASSWORD is not set in Netlify.';
-  if (!recipients().length) return 'HANDOFF_EMAIL_TO is not set in Netlify.';
+  if (needList && !recipients().length) return 'HANDOFF_EMAIL_TO is not set in Netlify.';
   return null;
 }
 
-export async function sendEmail({ subject, html, text }) {
+export const looksLikeEmail = s => /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(String(s || '').trim());
+
+export async function sendEmail({ subject, html, text }, to = recipients()) {
   const user = process.env.GMAIL_USER.trim();
   const transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -202,7 +204,7 @@ export async function sendEmail({ subject, html, text }) {
   try {
     const info = await transport.sendMail({
       from: { name: 'CNT On-Call', address: user },
-      to: recipients(), subject, html, text
+      to, subject, html, text
     });
     return info.messageId;
   } catch (e) {

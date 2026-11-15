@@ -1,13 +1,14 @@
 /* CNT on-call — handoff email status and test send, for the Admin panel.
  *
  *   GET  /api/handoff-email   is email set up, who gets it, next and last send
- *   POST /api/handoff-email   send a [TEST] copy of the next handoff email now
+ *   POST /api/handoff-email   send a [TEST] copy of the next handoff email to ONE
+ *                             address typed in the Admin panel — never to the list
  *
  * Both need the team password, same as the rest of the site.
  */
 import {
   wallNow, blockIndex, blockStart, blockTeam, buildEmail, sendEmail, emailSetupProblem,
-  loadData, readFile, passwordOk, recipients, when, LOG
+  loadData, readFile, passwordOk, recipients, looksLikeEmail, when, LOG
 } from '../lib/handoff.mjs';
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -28,6 +29,7 @@ export default async (req) => {
       const last = ((log.data && log.data.sent) || [])[0] || null;
       return json({
         ready: !emailSetupProblem(), problem: emailSetupProblem(),
+        canTest: !emailSetupProblem({ needList: false }),
         to: recipients(),
         next: { handoff: when(blockStart(next)), team: blockTeam(next) === 'blue' ? 'Blue Team' : 'Red Team' },
         last
@@ -35,15 +37,20 @@ export default async (req) => {
     }
 
     if (req.method === 'POST') {
-      const problem = emailSetupProblem();
+      const body = await req.json().catch(() => ({}));
+      const to = String(body.to || '').trim();
+      if (!looksLikeEmail(to)) {
+        return json({ error: 'bad_address', message: 'Enter one email address to send the test to.' }, 400);
+      }
+      const problem = emailSetupProblem({ needList: false });
       if (problem) return json({ error: 'not_configured', message: problem }, 503);
       if (Date.now() - lastTest < 60e3) {
         return json({ error: 'too_soon', message: 'A test was just sent. Wait a minute and try again.' }, 429);
       }
       lastTest = Date.now();
       const mail = buildEmail(await loadData(), next, { test: true, siteUrl: process.env.URL || '' });
-      await sendEmail(mail);
-      return json({ ok: true, to: recipients(), subject: mail.subject });
+      await sendEmail(mail, [to]);
+      return json({ ok: true, to: [to], subject: mail.subject });
     }
 
     return json({ error: 'method_not_allowed' }, 405);

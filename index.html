@@ -819,9 +819,14 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;color:v
 
       <div class="adminsec">
         <h3>Handoff email</h3>
-        <p class="adminnote">Every handoff Thursday at 0700 the site emails the incoming team's call-out list and coverage swaps. Use the button to send a test copy of the next one.</p>
-        <div class="formerr" id="heErr" hidden></div>
+        <p class="adminnote">Every handoff Thursday at 0700 the site emails the incoming team's call-out list and coverage swaps to the team list.</p>
         <p class="adminnote" id="heStatus" style="color:var(--text)">Checking…</p>
+        <p class="subhead" style="margin-top:14px">Preview it</p>
+        <p class="adminnote">Sends a copy of the next handoff email, marked TEST, to the one address you type here. It does <b>not</b> go to the team list.</p>
+        <div class="formerr" id="heErr" hidden></div>
+        <div class="formrow">
+          <label style="flex:1 1 100%">Send test to<input class="fin" type="email" id="heTo" placeholder="your.email@cityofirvine.org" autocomplete="email" style="font-family:var(--body)"></label>
+        </div>
         <button class="btn primary" id="heTest">Send test email</button>
         <div id="heFlash"></div>
       </div>
@@ -2383,19 +2388,21 @@ async function loadHandoff(){
     document.getElementById('heTest').disabled=true; return;
   }
   const b=r.body;
-  document.getElementById('heTest').disabled=!b.ready;
-  if(!b.ready){ st.innerHTML='<b>Not set up yet.</b> '+esc(b.problem||''); return; }
+  document.getElementById('heTest').disabled=!b.canTest;
+  if(!b.ready){ st.innerHTML='<b>Automatic email not set up yet.</b> '+esc(b.problem||''); return; }
   st.innerHTML='Next email: <b>'+esc(b.next.handoff)+'</b> ('+esc(b.next.team)+') to <b>'+b.to.map(esc).join(', ')+'</b>'+
     (b.last?'<br>Last sent: '+esc(b.last.handoff)+' ('+esc(b.last.team)+')':'<br>No automatic email has been sent yet.');
 }
 async function sendHandoffTest(){
   heErr('');
-  if(!confirm('Send a TEST copy of the next handoff email now?\n\nIt goes to everyone on the email list, marked as a test.')) return;
+  const to=document.getElementById('heTo').value.trim();
+  if(!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(to)){ heErr('Enter one email address to send the test to.'); return; }
+  try{ localStorage.setItem('cnt.heTo',to); }catch(e){}
   const btn=document.getElementById('heTest'); btn.disabled=true;
   try{
-    const r=await fetchJSON('/api/handoff-email',{method:'POST',headers:authHeaders()});
+    const r=await fetchJSON('/api/handoff-email',{method:'POST',headers:authHeaders(),body:JSON.stringify({to})});
     if(!r.ok){ heErr((r.body&&r.body.message)||'The test email could not be sent.'); return; }
-    document.getElementById('heFlash').innerHTML='<div class="flashbar">Test email sent to '+r.body.to.map(esc).join(', ')+'. Check the inbox (and spam folder).</div>';
+    document.getElementById('heFlash').innerHTML='<div class="flashbar">Test email sent to '+esc(r.body.to[0])+'. Check the inbox (and spam folder). Only that address got it.</div>';
     setTimeout(()=>{document.getElementById('heFlash').innerHTML='';},9000);
   }catch(e){ heErr('Could not reach the site. Try again.'); }
   finally{ btn.disabled=false; }
@@ -2493,6 +2500,8 @@ document.getElementById('trSave').addEventListener('click',trSave);
 document.getElementById('trCancel').addEventListener('click',trReset);
 document.getElementById('pwSave').addEventListener('click',changePassword);
 document.getElementById('heTest').addEventListener('click',sendHandoffTest);
+try{ const v=localStorage.getItem('cnt.heTo'); if(v) document.getElementById('heTo').value=v; }catch(e){}
+document.getElementById('heTo').addEventListener('keydown',e=>{ if(e.key==='Enter') sendHandoffTest(); });
 ['pwNew','pwNew2'].forEach(id=>document.getElementById(id)
   .addEventListener('keydown',e=>{ if(e.key==='Enter') changePassword(); }));
 document.getElementById('addMember').addEventListener('click',()=>openEditor(null));

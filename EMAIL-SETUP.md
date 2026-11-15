@@ -33,7 +33,7 @@ On netlify.com, open the site, then **Site configuration → Environment variabl
 | --- | --- |
 | `GMAIL_USER` | the Gmail address from step 1 |
 | `GMAIL_APP_PASSWORD` | the 16-letter app password from step 3 |
-| `HANDOFF_EMAIL_TO` | the destination address. For several, separate with commas |
+| `HANDOFF_EMAIL_TO` | `ps_cnt@cityofirvine.org` (the team list that gets the real email) |
 
 ### 5. Upload the files
 Upload to GitHub as usual (see DEPLOY.md). This update includes `package.json`
@@ -42,10 +42,13 @@ email needs, so make sure they get uploaded. If you set the variables *after*
 uploading, go to **Deploys → Trigger deploy → Deploy site** so the site picks them up.
 
 ### 6. Test
-Sign in to the site, open **Admin → Handoff email**, and tap **Send test email**.
-It sends a copy of the *next* handoff email, marked TEST. Check the inbox and
-the spam folder. If it lands in junk or never arrives at a city address, ask IT
-to allow mail from the Gmail address.
+Sign in to the site and open **Admin → Handoff email**. Type your own address
+in **Send test to** and tap **Send test email**. You get a copy of the *next*
+handoff email, marked TEST. It goes only to the address you typed, never to the
+team list. Check the inbox and the spam folder. If it lands in junk or never
+arrives at a city address, ask IT to allow mail from the Gmail address.
+
+The site remembers the test address on that device, so next time you just tap the button.
 
 ## If it stops working
 - **"Gmail refused the sign-in"**: the app password was removed, or someone
