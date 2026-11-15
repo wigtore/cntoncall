@@ -1,6 +1,6 @@
 {
- "version": 183,
- "updated": "2026-11-15T16:57:52.036Z",
+ "version": 184,
+ "updated": "2026-11-15T16:58:31.288Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -73,8 +73,8 @@
    "end": 1600
   },
   {
-   "name": "M. Ward",
    "cs": "N7",
+   "name": "M. Ward",
    "team": "blue",
    "sub": "neg",
    "role": "Negotiator",
@@ -85,10 +85,11 @@
     ]
    ],
    "carrier": "",
+   "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
-   "start": 600,
-   "end": 1600
+   "start": 2100,
+   "end": 700
   },
   {
    "name": "J. Yue",
