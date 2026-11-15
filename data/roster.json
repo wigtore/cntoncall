@@ -1,6 +1,6 @@
 {
- "version": 185,
- "updated": "2026-11-15T16:58:43.158Z",
+ "version": 186,
+ "updated": "2026-11-15T16:58:55.755Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -88,8 +88,8 @@
    "note": "",
    "mode": "sched",
    "daysLabel": "MON-THURS",
-   "start": 2100,
-   "end": 700
+   "start": 600,
+   "end": 1600
   },
   {
    "cs": "N9",
