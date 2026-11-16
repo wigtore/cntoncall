@@ -1,6 +1,6 @@
 {
- "version": 188,
- "updated": "2026-11-16T17:12:12.125Z",
+ "version": 189,
+ "updated": "2026-11-16T17:12:37.323Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -511,8 +511,8 @@
    "end": 600
   },
   {
-   "name": "K. Almeida",
    "cs": "TOC4",
+   "name": "K. Almeida",
    "team": "red",
    "sub": "toc",
    "role": "Tactical Dispatcher",
@@ -527,6 +527,7 @@
     ]
    ],
    "carrier": "VZ",
+   "note": "UNAVAILABLE",
    "mode": "sched",
    "daysLabel": "THURS-SAT",
    "start": 1100,
