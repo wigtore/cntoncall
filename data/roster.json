@@ -1,6 +1,6 @@
 {
- "version": 187,
- "updated": "2026-11-16T01:02:26.688Z",
+ "version": 188,
+ "updated": "2026-11-16T17:12:12.125Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -484,9 +484,9 @@
    "carrier": "AT&T",
    "note": "",
    "mode": "sched",
-   "daysLabel": "SUN-TUES",
-   "start": 600,
-   "end": 1800
+   "daysLabel": "TUES-THURS",
+   "start": 1800,
+   "end": 600
   },
   {
    "name": "S. Miller",
