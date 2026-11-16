@@ -1,6 +1,6 @@
 {
- "version": 194,
- "updated": "2026-11-16T18:03:41.468Z",
+ "version": 195,
+ "updated": "2026-11-16T21:31:17.720Z",
  "members": [
   {
    "name": "Sgt. D. Lipscomb",
@@ -528,8 +528,10 @@
    ],
    "carrier": "VZ",
    "note": "UNAVAILABLE",
-   "mode": "leave",
-   "daysLabel": ""
+   "mode": "sched",
+   "daysLabel": "MON-THURS",
+   "start": 600,
+   "end": 1600
   },
   {
    "name": "L. Marangi",
